@@ -5,6 +5,6 @@ package com.company.dragonsofmugloar.client.dto;
  * {@code 1} for Base64 and {@code 2} for ROT13; when set, {@code adId}, {@code message} and
  * {@code probability} are encoded.
  */
-public record MessageResponse(String adId, String message, int reward, int expiresIn, Integer encrypted,
+public record MessagePayload(String adId, String message, int reward, int expiresIn, Integer encrypted,
                               String probability) {
 }
