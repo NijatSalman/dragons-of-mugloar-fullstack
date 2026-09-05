@@ -15,6 +15,11 @@ spring.http.clients:
 game-api:
   base-url: https://dragonsofmugloar.com/api/v2
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
 management:
   endpoints:
     web:

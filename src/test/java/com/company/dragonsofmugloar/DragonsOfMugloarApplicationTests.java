@@ -35,4 +35,12 @@ class DragonsOfMugloarApplicationTests {
 		mockMvc.perform(get("/actuator/prometheus"))
 				.andExpect(status().isOk());
 	}
+
+	@Test
+	void openApiDocumentIsPublished() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.info.title").value("Dragons of Mugloar"))
+				.andExpect(jsonPath("$.paths['/api/v1/games']").exists());
+	}
 }

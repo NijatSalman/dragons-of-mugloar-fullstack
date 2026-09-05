@@ -3,12 +3,12 @@ package com.company.dragonsofmugloar.client;
 import static com.company.dragonsofmugloar.exception.GameApiException.Reason.REJECTED;
 import static com.company.dragonsofmugloar.exception.GameApiException.Reason.UNAVAILABLE;
 
-import com.company.dragonsofmugloar.client.dto.GameStartResponse;
-import com.company.dragonsofmugloar.client.dto.MessageResponse;
-import com.company.dragonsofmugloar.client.dto.PurchaseResponse;
-import com.company.dragonsofmugloar.client.dto.ReputationResponse;
-import com.company.dragonsofmugloar.client.dto.ShopItemResponse;
-import com.company.dragonsofmugloar.client.dto.SolveResponse;
+import com.company.dragonsofmugloar.client.dto.StartGamePayload;
+import com.company.dragonsofmugloar.client.dto.MessagePayload;
+import com.company.dragonsofmugloar.client.dto.BuyPayload;
+import com.company.dragonsofmugloar.client.dto.ReputationPayload;
+import com.company.dragonsofmugloar.client.dto.ShopItemPayload;
+import com.company.dragonsofmugloar.client.dto.SolvePayload;
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.domain.Ad;
 import com.company.dragonsofmugloar.domain.Game;
@@ -39,9 +39,9 @@ import org.springframework.web.client.RestClientResponseException;
 @Component
 class GameApiRestClient implements GameApiClient {
 
-    private static final ParameterizedTypeReference<List<MessageResponse>> MESSAGE_LIST =
+    private static final ParameterizedTypeReference<List<MessagePayload>> MESSAGE_LIST =
             new ParameterizedTypeReference<>() { };
-    private static final ParameterizedTypeReference<List<ShopItemResponse>> SHOP_LIST =
+    private static final ParameterizedTypeReference<List<ShopItemPayload>> SHOP_LIST =
             new ParameterizedTypeReference<>() { };
 
     private final RestClient restClient;
@@ -52,8 +52,8 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     public Game startGame() {
-        GameStartResponse response = call(null, () -> restClient.post().uri("/game/start")
-                .retrieve().body(GameStartResponse.class));
+        StartGamePayload response = call(null, () -> restClient.post().uri("/game/start")
+                .retrieve().body(StartGamePayload.class));
         return new Game(response.gameId(), response.lives(), response.gold(), response.level(), response.score(),
                 response.highScore(), response.turn());
     }
@@ -61,15 +61,15 @@ class GameApiRestClient implements GameApiClient {
     @Override
     @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<Ad> getAds(String gameId) {
-        List<MessageResponse> messages = call(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
+        List<MessagePayload> messages = call(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
                 .retrieve().body(MESSAGE_LIST));
         return messages.stream().map(GameApiRestClient::toAd).toList();
     }
 
     @Override
     public SolveResult solve(String gameId, String adId) {
-        SolveResponse response = call(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
-                .retrieve().body(SolveResponse.class));
+        SolvePayload response = call(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
+                .retrieve().body(SolvePayload.class));
         return new SolveResult(response.success(), response.lives(), response.gold(), response.score(),
                 response.highScore(), response.turn(), response.message());
     }
@@ -77,29 +77,29 @@ class GameApiRestClient implements GameApiClient {
     @Override
     @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<ShopItem> getShop(String gameId) {
-        List<ShopItemResponse> items = call(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
+        List<ShopItemPayload> items = call(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
                 .retrieve().body(SHOP_LIST));
         return items.stream().map(item -> new ShopItem(item.id(), item.name(), item.cost())).toList();
     }
 
     @Override
     public PurchaseResult buy(String gameId, String itemId) {
-        PurchaseResponse response = call(gameId, () -> restClient.post()
+        BuyPayload response = call(gameId, () -> restClient.post()
                 .uri("/{gameId}/shop/buy/{itemId}", gameId, itemId)
-                .retrieve().body(PurchaseResponse.class));
+                .retrieve().body(BuyPayload.class));
         return new PurchaseResult(response.shoppingSuccess(), response.gold(), response.lives(), response.level(),
                 response.turn());
     }
 
     @Override
     public Reputation investigateReputation(String gameId) {
-        ReputationResponse response = call(gameId, () -> restClient.post()
+        ReputationPayload response = call(gameId, () -> restClient.post()
                 .uri("/{gameId}/investigate/reputation", gameId)
-                .retrieve().body(ReputationResponse.class));
+                .retrieve().body(ReputationPayload.class));
         return new Reputation(response.people(), response.state(), response.underworld());
     }
 
-    private static Ad toAd(MessageResponse message) {
+    private static Ad toAd(MessagePayload message) {
         return new Ad(
                 MessageDecoder.decode(message.adId(), message.encrypted()),
                 MessageDecoder.decode(message.message(), message.encrypted()),
