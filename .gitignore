@@ -43,3 +43,6 @@ frontend/coverage/
 
 ### OS ###
 .DS_Store
+
+### Claude working files (plan, tickets, notes) ###
+.claude/
