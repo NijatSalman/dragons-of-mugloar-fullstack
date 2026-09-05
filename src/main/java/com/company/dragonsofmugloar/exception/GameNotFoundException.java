@@ -1,9 +1,15 @@
 package com.company.dragonsofmugloar.exception;
 
-/** No game exists for the given id. Mapped to HTTP 404. */
+import lombok.Getter;
+
+/** No game exists for the given id, or it has expired on the game server. Mapped to HTTP 404. */
+@Getter
 public class GameNotFoundException extends RuntimeException {
 
+    private final String gameId;
+
     public GameNotFoundException(String gameId) {
-        super("Game not found: " + gameId);
+        super("Game not found: gameId=" + gameId);
+        this.gameId = gameId;
     }
 }
