@@ -12,6 +12,7 @@ import com.company.dragonsofmugloar.client.dto.SolveResponse;
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.domain.Ad;
 import com.company.dragonsofmugloar.domain.Game;
+import com.company.dragonsofmugloar.domain.Probability;
 import com.company.dragonsofmugloar.domain.PurchaseResult;
 import com.company.dragonsofmugloar.domain.Reputation;
 import com.company.dragonsofmugloar.domain.ShopItem;
@@ -19,12 +20,10 @@ import com.company.dragonsofmugloar.domain.SolveResult;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Supplier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.resilience.annotation.Retryable;
-import org.springframework.resilience.retry.MethodRetryPredicate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -53,13 +52,14 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     public Game startGame() {
-        GameStartResponse r = call(null, () -> restClient.post().uri("/game/start")
+        GameStartResponse response = call(null, () -> restClient.post().uri("/game/start")
                 .retrieve().body(GameStartResponse.class));
-        return new Game(r.gameId(), r.lives(), r.gold(), r.level(), r.score(), r.highScore(), r.turn());
+        return new Game(response.gameId(), response.lives(), response.gold(), response.level(), response.score(),
+                response.highScore(), response.turn());
     }
 
     @Override
-    @Retryable(includes = GameApiException.class, predicate = RetryWhenUnavailable.class, maxRetries = 1, delay = 200)
+    @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<Ad> getAds(String gameId) {
         List<MessageResponse> messages = call(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
                 .retrieve().body(MESSAGE_LIST));
@@ -68,42 +68,44 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     public SolveResult solve(String gameId, String adId) {
-        SolveResponse r = call(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
+        SolveResponse response = call(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
                 .retrieve().body(SolveResponse.class));
-        return new SolveResult(r.success(), r.lives(), r.gold(), r.score(), r.highScore(), r.turn(), r.message());
+        return new SolveResult(response.success(), response.lives(), response.gold(), response.score(),
+                response.highScore(), response.turn(), response.message());
     }
 
     @Override
-    @Retryable(includes = GameApiException.class, predicate = RetryWhenUnavailable.class, maxRetries = 1, delay = 200)
+    @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<ShopItem> getShop(String gameId) {
         List<ShopItemResponse> items = call(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
                 .retrieve().body(SHOP_LIST));
-        return items.stream().map(i -> new ShopItem(i.id(), i.name(), i.cost())).toList();
+        return items.stream().map(item -> new ShopItem(item.id(), item.name(), item.cost())).toList();
     }
 
     @Override
     public PurchaseResult buy(String gameId, String itemId) {
-        PurchaseResponse r = call(gameId, () -> restClient.post()
+        PurchaseResponse response = call(gameId, () -> restClient.post()
                 .uri("/{gameId}/shop/buy/{itemId}", gameId, itemId)
                 .retrieve().body(PurchaseResponse.class));
-        return new PurchaseResult(r.shoppingSuccess(), r.gold(), r.lives(), r.level(), r.turn());
+        return new PurchaseResult(response.shoppingSuccess(), response.gold(), response.lives(), response.level(),
+                response.turn());
     }
 
     @Override
     public Reputation investigateReputation(String gameId) {
-        ReputationResponse r = call(gameId, () -> restClient.post()
+        ReputationResponse response = call(gameId, () -> restClient.post()
                 .uri("/{gameId}/investigate/reputation", gameId)
                 .retrieve().body(ReputationResponse.class));
-        return new Reputation(r.people(), r.state(), r.underworld());
+        return new Reputation(response.people(), response.state(), response.underworld());
     }
 
-    private static Ad toAd(MessageResponse m) {
+    private static Ad toAd(MessageResponse message) {
         return new Ad(
-                MessageDecoder.decode(m.adId(), m.encrypted()),
-                MessageDecoder.decode(m.message(), m.encrypted()),
-                m.reward(),
-                m.expiresIn(),
-                MessageDecoder.decode(m.probability(), m.encrypted()));
+                MessageDecoder.decode(message.adId(), message.encrypted()),
+                MessageDecoder.decode(message.message(), message.encrypted()),
+                message.reward(),
+                message.expiresIn(),
+                Probability.fromLabel(MessageDecoder.decode(message.probability(), message.encrypted())));
     }
 
     /**
@@ -115,33 +117,26 @@ class GameApiRestClient implements GameApiClient {
         try {
             T body = request.get();
             if (body == null) {
-                throw new GameApiException(UNAVAILABLE, "Game server returned an empty response");
+                throw new GameApiException(UNAVAILABLE, "Game server response empty: gameId=" + gameId);
             }
             return body;
-        } catch (RestClientResponseException e) {
-            throw toException(e.getStatusCode().value(), gameId);
-        } catch (ResourceAccessException e) {
-            throw new GameApiException(UNAVAILABLE, "Game server is unreachable: " + e.getMessage(), e);
-        } catch (RestClientException e) {
-            throw new GameApiException(UNAVAILABLE, "Game server returned an unreadable response: " + e.getMessage(), e);
+        } catch (RestClientResponseException httpError) {
+            throw toException(httpError.getStatusCode().value(), gameId);
+        } catch (ResourceAccessException networkError) {
+            throw new GameApiException(UNAVAILABLE,
+                    "Game server unreachable: gameId=" + gameId + ", cause=" + networkError.getMessage(), networkError);
+        } catch (RestClientException clientError) {
+            throw new GameApiException(UNAVAILABLE,
+                    "Game server response unreadable: gameId=" + gameId + ", cause=" + clientError.getMessage(), clientError);
         }
     }
 
     private static RuntimeException toException(int status, String gameId) {
         return switch (status) {
-            case 400 -> new GameApiException(REJECTED, "Game server rejected the request for game " + gameId);
+            case 400 -> new GameApiException(REJECTED, "Game server rejected request: gameId=" + gameId);
             case 404 -> new GameNotFoundException(gameId);
             case 410 -> new GameOverException(gameId);
-            default -> new GameApiException(UNAVAILABLE, "Game server answered HTTP " + status + " for game " + gameId);
+            default -> new GameApiException(UNAVAILABLE, "Game server failed: gameId=" + gameId + ", status=" + status);
         };
-    }
-
-    /** Only an unavailable server is worth a second attempt; a rejected request would be rejected again. */
-    static class RetryWhenUnavailable implements MethodRetryPredicate {
-
-        @Override
-        public boolean shouldRetry(Method method, Throwable throwable) {
-            return throwable instanceof GameApiException e && e.reason() == UNAVAILABLE;
-        }
     }
 }

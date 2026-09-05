@@ -28,13 +28,13 @@ final class MessageDecoder {
 
     private static String rot13(String text) {
         StringBuilder out = new StringBuilder(text.length());
-        for (char c : text.toCharArray()) {
-            if (c >= 'a' && c <= 'z') {
-                out.append((char) ('a' + (c - 'a' + 13) % 26));
-            } else if (c >= 'A' && c <= 'Z') {
-                out.append((char) ('A' + (c - 'A' + 13) % 26));
+        for (char letter : text.toCharArray()) {
+            if (letter >= 'a' && letter <= 'z') {
+                out.append((char) ('a' + (letter - 'a' + 13) % 26));
+            } else if (letter >= 'A' && letter <= 'Z') {
+                out.append((char) ('A' + (letter - 'A' + 13) % 26));
             } else {
-                out.append(c);
+                out.append(letter);
             }
         }
         return out.toString();
