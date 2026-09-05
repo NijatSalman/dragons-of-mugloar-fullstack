@@ -1,1 +1,7 @@
+plugins {
+	// Lets Gradle download the JDK declared in build.gradle (Java 21) when it is not installed locally,
+	// so the build works on any developer machine and on CI without a manual JDK setup.
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = 'dragons-of-mugloar'
