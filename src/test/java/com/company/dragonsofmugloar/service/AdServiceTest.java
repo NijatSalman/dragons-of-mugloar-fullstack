@@ -42,13 +42,13 @@ class AdServiceTest {
     }
 
     @Test
-    void unknownGameIsRejectedBeforeCallingTheServer() {
+    void getRecommendedAdsThrowsGameNotFoundBeforeCallingTheServer() {
         assertThatThrownBy(() -> service.getRecommendedAds("nope1234")).isInstanceOf(GameNotFoundException.class);
         verifyNoInteractions(gameApiClient);
     }
 
     @Test
-    void adsComeBackRankedWithRecommendations() {
+    void getRecommendedAdsReturnsRankedAdsWithRecommendation() {
         gameRepository.save(NEW_GAME);
         when(gameApiClient.getAds(GAME_ID)).thenReturn(List.of(
                 new Ad("HiCtYxHC", "Help Praskoviya Richard to fix their beer mug", 4, 7, Probability.PIECE_OF_CAKE),
@@ -65,7 +65,7 @@ class AdServiceTest {
     }
 
     @Test
-    void solvingUpdatesTheStoredGame() {
+    void solveAdUpdatesTheStoredGame() {
         gameRepository.save(NEW_GAME);
         SolveResult result = new SolveResult(true, 3, 21, 21, 0, 2, "You successfully solved the mission!");
         when(gameApiClient.solveAd(GAME_ID, "DSAUBsXa")).thenReturn(result);
@@ -75,7 +75,7 @@ class AdServiceTest {
     }
 
     @Test
-    void losingTheLastLifeMarksTheGameOver() {
+    void solveAdMarksTheGameOverWhenLastLifeIsLost() {
         gameRepository.save(new Game(GAME_ID, 1, 116, 0, 116, 116, 6));
         when(gameApiClient.solveAd(GAME_ID, "mkONU4UV"))
                 .thenReturn(new SolveResult(false, 0, 116, 116, 116, 7, "You failed to solve the mission."));

@@ -17,7 +17,7 @@ class AdRecommenderTest {
     private final AdRecommender recommender = new AdRecommender(TestProperties.autoplay());
 
     @Test
-    void expectedValueIsRewardWeightedByChance() {
+    void recommendAdWeighsRewardByChance() {
         Ad ad = new Ad("DSAUBsXa", "Help Majid Desprez to transport a magic beer mug to steppe in Falldean",
                 40, 7, Probability.QUITE_LIKELY);
 
@@ -28,7 +28,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void adsAreOrderedByExpectedValueThenBySafety() {
+    void recommendAdsOrdersByExpectedValueThenBySafety() {
         Ad bigButRisky = new Ad("3haCbU60",
                 "Escort Gervase Wheeler to grassland in Frostdinny where they can meet with their long lost chicken",
                 100, 7, Probability.RISKY);                                                        // 45
@@ -44,14 +44,14 @@ class AdRecommenderTest {
     }
 
     @Test
-    void goodOddsEnoughTimeAndHonestWorkIsRecommended() {
+    void recommendAdRecommendsGoodOddsEnoughTimeAndHonestWork() {
         Ad ad = new Ad("ulnMLC86", "Help Egídio Holloway to fix their wagon", 3, 2, Probability.GAMBLE);
 
         assertThat(recommender.recommendAd(ad).recommended()).isTrue();
     }
 
     @Test
-    void worseOddsThanAGambleAreNotRecommended() {
+    void recommendAdRejectsOddsWorseThanAGamble() {
         Ad ad = new Ad("wWXQttcJ",
                 "Help Helmine Statham to write their biographical novel about their difficulties with a deranged cat",
                 30, 7, Probability.RISKY);
@@ -60,7 +60,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void anAdAboutToExpireIsNotRecommended() {
+    void recommendAdRejectsAnAdAboutToExpire() {
         Ad ad = new Ad("72V2caSU", "Help Prakash Osbourne to write their biographical novel about their difficulties "
                 + "with a deranged water", 45, 1, Probability.PIECE_OF_CAKE);
 
@@ -68,7 +68,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void theftAndKidnappingAreNotRecommendedWhateverTheOdds() {
+    void recommendAdRejectsTheftAndKidnappingWhateverTheOdds() {
         Ad theft = new Ad("BcrEjntc", "Steal super awesome diamond from Vendelín Derrickson", 200, 7,
                 Probability.SURE_THING);
         Ad kidnapping = new Ad("jWMeTc6h", "Kidnap Blair Bateson's long lost chicken and bring it to Frostdinny",
@@ -79,7 +79,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void wordsMerelyContainingStealAreFine() {
+    void recommendAdAcceptsWordsMerelyContainingSteal() {
         Ad ad = new Ad("Ww6aT9xZ", "Help Cassianus Orange to polish their stainless steel armour", 25, 7,
                 Probability.SURE_THING);
 
@@ -87,7 +87,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void unknownLabelsAreNeitherRecommendedNorDiscarded() {
+    void recommendAdNeitherRecommendsNorDiscardsUnknownLabels() {
         Ad ad = new Ad("ggLmesXI", "Create an advertisement campaign for Vendelín Derrickson to promote their "
                 + "wagon based business", 32, 7, Probability.UNKNOWN);
 
@@ -98,7 +98,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void withPlentyOfLivesTheMostValuableRecommendedAdIsChosen() {
+    void chooseAdPicksTheMostValuableRecommendedAdWhenLivesArePlenty() {
         List<AdRecommendation> board = recommender.recommendAds(List.of(
                 new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
                 new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
@@ -110,7 +110,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void withFewLivesOnlySafeAdsAreChosen() {
+    void chooseAdPicksOnlySafeAdsWhenLivesAreLow() {
         List<AdRecommendation> board = recommender.recommendAds(List.of(
                 new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
                 new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
@@ -122,7 +122,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void withFewLivesAndNoSafeAdTheSafestRecommendedOneIsChosen() {
+    void chooseAdPicksTheSafestRecommendedAdWhenLivesAreLowAndNoneIsSafe() {
         List<AdRecommendation> board = recommender.recommendAds(List.of(
                 new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
                 new Ad("Vh8MgCru", "Help Päivä Braddock to transport a magic pot to field in Oldwater", 8, 7,
@@ -134,7 +134,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void whenNothingIsRecommendedTheSafestAdOnTheBoardIsChosen() {
+    void chooseAdPicksTheSafestAdWhenNothingIsRecommended() {
         List<AdRecommendation> board = recommender.recommendAds(List.of(
                 new Ad("1m9zkK9h", "Create an advertisement campaign for Liron Blackbourne", 35, 7, Probability.SUICIDE_MISSION),
                 new Ad("58rrbJ0D", "Escort Imogene Wild to savannah in Strongchester", 68, 7, Probability.PLAYING_WITH_FIRE)));
@@ -145,7 +145,7 @@ class AdRecommenderTest {
     }
 
     @Test
-    void anEmptyBoardGivesNoChoice() {
+    void chooseAdReturnsEmptyWhenBoardIsEmpty() {
         assertThat(recommender.chooseAd(List.of(), 3)).isEmpty();
     }
 }

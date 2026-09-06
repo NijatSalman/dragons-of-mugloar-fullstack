@@ -36,7 +36,7 @@ class ShopServiceTest {
     }
 
     @Test
-    void itemsAreListedForAKnownGame() {
+    void getShopItemsReturnsTheCatalogueForAKnownGame() {
         gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15));
         List<ShopItem> items = List.of(new ShopItem("hpot", "Healing potion", 50),
                 new ShopItem("cs", "Claw Sharpening", 100));
@@ -46,13 +46,13 @@ class ShopServiceTest {
     }
 
     @Test
-    void unknownGameIsRejectedBeforeCallingTheServer() {
+    void buyItemThrowsGameNotFoundBeforeCallingTheServer() {
         assertThatThrownBy(() -> service.buyItem("nope1234", "hpot")).isInstanceOf(GameNotFoundException.class);
         verifyNoInteractions(gameApiClient);
     }
 
     @Test
-    void buyingUpdatesGoldLevelAndTurnButKeepsTheScore() {
+    void buyItemUpdatesGoldLevelAndTurnButKeepsTheScore() {
         gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15));
         when(gameApiClient.buyItem(GAME_ID, "cs")).thenReturn(new PurchaseResult(true, 20, 3, 1, 16));
 
@@ -63,7 +63,7 @@ class ShopServiceTest {
     }
 
     @Test
-    void failedPurchaseStillAdvancesTheTurn() {
+    void buyItemAdvancesTheTurnWhenPurchaseFails() {
         gameRepository.save(new Game(GAME_ID, 3, 4, 0, 4, 4, 2));
         when(gameApiClient.buyItem(GAME_ID, "hpot")).thenReturn(new PurchaseResult(false, 4, 3, 0, 3));
 

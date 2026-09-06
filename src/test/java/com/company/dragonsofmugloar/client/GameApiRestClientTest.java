@@ -51,7 +51,7 @@ class GameApiRestClientTest {
     private MockRestServiceServer server;
 
     @Test
-    void startGameMapsToGame() {
+    void startGameReturnsTheNewGame() {
         server.expect(requestTo(BASE + "/game/start")).andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("""
                         {"gameId":"ggLmesXI","lives":3,"gold":0,"level":0,"score":0,"highScore":0,"turn":0}
@@ -61,7 +61,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void getAdsMapsAndDecodesEncryptedMessages() {
+    void getAdsReturnsDecodedAds() {
         server.expect(requestTo(BASE + "/ggLmesXI/messages")).andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("""
                         [{"adId":"DSAUBsXa","message":"Help Majid Desprez to transport a magic beer mug to steppe in Falldean",
@@ -82,7 +82,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void solvePostsToTheAdAndMapsTheOutcome() {
+    void solveAdReturnsTheOutcome() {
         server.expect(requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa")).andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("""
                         {"success":true,"lives":3,"gold":4,"score":4,"highScore":0,"turn":2,
@@ -94,7 +94,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void getShopMapsItems() {
+    void getShopItemsReturnsTheCatalogue() {
         server.expect(requestTo(BASE + "/ggLmesXI/shop")).andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("""
                         [{"id":"hpot","name":"Healing potion","cost":50},{"id":"cs","name":"Claw Sharpening","cost":100}]
@@ -106,7 +106,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void buyReportsAFailedPurchaseWithoutThrowing() {
+    void buyItemReturnsAFailedPurchaseWithoutThrowing() {
         server.expect(requestTo(BASE + "/ggLmesXI/shop/buy/hpot")).andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("""
                         {"shoppingSuccess":false,"gold":4,"lives":3,"level":0,"turn":3}
@@ -116,7 +116,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void investigateReputationMapsScores() {
+    void investigateReputationReturnsTheScores() {
         server.expect(requestTo(BASE + "/ggLmesXI/investigate/reputation")).andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("""
                         {"people":0.4,"state":-1.2,"underworld":0}
@@ -126,7 +126,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void badRequestOnSolveMeansTheAdIsGone() {
+    void solveAdThrowsAdNotAvailableWhenServerAnswers400() {
         server.expect(requestTo(BASE + "/ggLmesXI/solve/HiCtYxHC"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.TEXT_HTML).body(HTML_ERROR));
 
@@ -136,7 +136,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void notFoundBecomesGameNotFoundException() {
+    void getAdsThrowsGameNotFoundWhenServerAnswers404() {
         server.expect(requestTo(BASE + "/nope1234/messages"))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.TEXT_HTML).body(HTML_ERROR));
 
@@ -146,7 +146,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void goneBecomesGameOverException() {
+    void solveAdThrowsGameOverWhenServerAnswers410() {
         server.expect(requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa")).andRespond(withStatus(HttpStatus.GONE));
 
         assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa"))
@@ -155,7 +155,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void serverErrorOnReadIsRetriedOnceThenSucceeds() {
+    void getAdsRetriesOnceWhenServerAnswers503() {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/messages"))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/messages"))
@@ -166,7 +166,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void serverErrorOnReadFailsAfterTheSingleRetry() {
+    void getShopItemsThrowsGameApiExceptionWhenServerKeepsFailing() {
         server.expect(times(2), requestTo(BASE + "/ggLmesXI/shop"))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -178,7 +178,7 @@ class GameApiRestClientTest {
 
 
     @Test
-    void solveIsNeverRetried() {
+    void solveAdIsNeverRetriedWhenServerFails() {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa")).andRespond(withStatus(HttpStatus.BAD_GATEWAY));
 
         assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa")).isInstanceOf(GameApiException.class);
@@ -186,7 +186,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void timeoutIsAnUnavailableServer() {
+    void solveAdThrowsGameApiExceptionWhenServerTimesOut() {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa"))
                 .andRespond(withException(new SocketTimeoutException("Read timed out")));
 

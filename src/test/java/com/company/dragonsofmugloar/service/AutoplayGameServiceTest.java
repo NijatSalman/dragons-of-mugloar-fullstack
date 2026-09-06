@@ -41,7 +41,7 @@ class AutoplayGameServiceTest {
     }
 
     @Test
-    void runsEveryRequestedGameAndRecordsTheOutcomes() {
+    void startGamesPlaysEveryRequestedGameAndRecordsProgress() {
         when(gamePlayer.playNewGame(any())).thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41));
         AutoplayGameService service = new AutoplayGameService(gamePlayer, repository, sameThread,
                 Clock.fixed(NOW, ZoneOffset.UTC));
@@ -61,7 +61,7 @@ class AutoplayGameServiceTest {
     }
 
     @Test
-    void aFailingGameIsRecordedWithoutStoppingTheOthers() {
+    void startGamesRecordsAFailedGameWithoutStoppingTheOthers() {
         when(gamePlayer.playNewGame(any()))
                 .thenThrow(new GameApiException("Game server failed: gameId=null, status=503"))
                 .thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41));
@@ -78,7 +78,7 @@ class AutoplayGameServiceTest {
     }
 
     @Test
-    void unknownRunIsRejected() {
+    void getGamesProgressThrowsNotFoundWhenSessionIsUnknown() {
         AutoplayGameService service = new AutoplayGameService(gamePlayer, repository, sameThread, Clock.systemUTC());
 
         assertThatThrownBy(() -> service.getGamesProgress("6f1c0a3e-8b2d-4c8e-9f1a-2b3c4d5e6f70"))

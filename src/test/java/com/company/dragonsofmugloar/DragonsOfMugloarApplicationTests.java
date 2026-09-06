@@ -20,24 +20,24 @@ class DragonsOfMugloarApplicationTests {
 	private MockMvc mockMvc;
 
 	@Test
-	void contextLoads() {
+	void applicationContextStarts() {
 	}
 
 	@Test
-	void healthEndpointIsUp() throws Exception {
+	void healthEndpointReturnsUp() throws Exception {
 		mockMvc.perform(get("/actuator/health"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("UP"));
 	}
 
 	@Test
-	void prometheusEndpointIsExposed() throws Exception {
+	void prometheusEndpointReturns200() throws Exception {
 		mockMvc.perform(get("/actuator/prometheus"))
 				.andExpect(status().isOk());
 	}
 
 	@Test
-	void openApiDocumentIsPublished() throws Exception {
+	void openApiEndpointReturnsTheDocument() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.info.title").value("Dragons of Mugloar"))

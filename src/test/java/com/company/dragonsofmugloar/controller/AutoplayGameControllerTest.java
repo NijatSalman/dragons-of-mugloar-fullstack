@@ -34,7 +34,7 @@ class AutoplayGameControllerTest {
     private AutoplayGameService autoplayGameService;
 
     @Test
-    void startingARunReturns202WithLocation() throws Exception {
+    void startGamesReturns202WithTheNewSession() throws Exception {
         when(autoplayGameService.startGames(3)).thenReturn(AutoplayGameSession.create(SESSION_ID, 3, STARTED));
 
         mvc.perform(post(SESSIONS_URL).param("games", "3"))
@@ -47,20 +47,20 @@ class AutoplayGameControllerTest {
     }
 
     @Test
-    void tooManyGamesIs400() throws Exception {
+    void startGamesReturns400WhenMoreThan20GamesRequested() throws Exception {
         mvc.perform(post(SESSIONS_URL).param("games", "21"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(autoplayGameService);
     }
 
     @Test
-    void zeroGamesIs400() throws Exception {
+    void startGamesReturns400WhenZeroGamesRequested() throws Exception {
         mvc.perform(post(SESSIONS_URL).param("games", "0"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void progressShowsOutcomesAndSummaryOfFinishedGames() throws Exception {
+    void getGamesProgressReturnsEachGameAndTheScoreSummary() throws Exception {
         AutoplayGameSession session = AutoplayGameSession.create(SESSION_ID, 2, STARTED)
                 .withGame(0, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41), AutoplayGameStatus.FINISHED))
                 .withGame(1, AutoplayGameProgress.fromGame(new Game("NmLbq66u", 2, 40, 1, 380, 380, 12), AutoplayGameStatus.RUNNING));
@@ -79,7 +79,7 @@ class AutoplayGameControllerTest {
     }
 
     @Test
-    void unknownRunIs404() throws Exception {
+    void getGamesProgressReturns404WhenSessionIsUnknown() throws Exception {
         when(autoplayGameService.getGamesProgress(SESSION_ID)).thenThrow(new AutoplayGameSessionNotFoundException(SESSION_ID));
 
         mvc.perform(get(SESSIONS_URL + "/" + SESSION_ID))

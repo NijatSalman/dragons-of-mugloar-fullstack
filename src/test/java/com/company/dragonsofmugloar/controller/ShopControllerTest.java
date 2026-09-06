@@ -30,7 +30,7 @@ class ShopControllerTest {
     private ShopService shopService;
 
     @Test
-    void listsItems() throws Exception {
+    void getShopItemsReturnsTheCatalogue() throws Exception {
         when(shopService.getShopItems("ggLmesXI")).thenReturn(List.of(
                 new ShopItem("hpot", "Healing potion", 50), new ShopItem("cs", "Claw Sharpening", 100)));
 
@@ -43,7 +43,7 @@ class ShopControllerTest {
     }
 
     @Test
-    void buysAnItem() throws Exception {
+    void buyItemReturnsThePurchaseResult() throws Exception {
         when(shopService.buyItem("ggLmesXI", "cs")).thenReturn(new PurchaseResult(true, 20, 3, 1, 16));
 
         mvc.perform(post(SHOP_URL + "/cs"))
@@ -55,7 +55,7 @@ class ShopControllerTest {
     }
 
     @Test
-    void unavailableGameServerIs502() throws Exception {
+    void getShopItemsReturns502WhenGameServerIsUnavailable() throws Exception {
         when(shopService.getShopItems("ggLmesXI")).thenThrow(new GameApiException("Game server failed: gameId=ggLmesXI, status=503"));
 
         mvc.perform(get(SHOP_URL))
@@ -64,7 +64,7 @@ class ShopControllerTest {
     }
 
     @Test
-    void malformedItemIdIs400() throws Exception {
+    void buyItemReturns400WhenItemIdIsMalformed() throws Exception {
         mvc.perform(post(SHOP_URL + "/not%20valid!")).andExpect(status().isBadRequest());
     }
 }

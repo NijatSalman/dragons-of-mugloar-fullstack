@@ -53,7 +53,7 @@ class GamePlayerTest {
     }
 
     @Test
-    void solvesTurnAfterTurnUntilNoLivesRemain() {
+    void playNewGameSolvesTurnAfterTurnUntilNoLivesRemain() {
         when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs")).thenReturn(
                 new SolveResult(false, 2, 0, 0, 0, 1, "You failed on the mission!"),
@@ -70,7 +70,7 @@ class GamePlayerTest {
     }
 
     @Test
-    void buysWhatThePolicySaysAfterSolving() {
+    void playNewGameBuysWhatThePolicySaysAfterSolving() {
         when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 120, 0, 300, 300, 10));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs")).thenReturn(
                 new SolveResult(true, 3, 154, 334, 334, 11, "You successfully solved the mission!"),
@@ -83,7 +83,7 @@ class GamePlayerTest {
     }
 
     @Test
-    void skipsAnAdThatVanishedBeforeSolving() {
+    void playNewGameSkipsAnAdThatVanishedBeforeSolving() {
         when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs"))
                 .thenThrow(new AdNotAvailableException(GAME_ID, "KdX1gKEs"))

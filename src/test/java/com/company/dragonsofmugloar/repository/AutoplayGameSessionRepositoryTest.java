@@ -17,7 +17,7 @@ class AutoplayRunRepositoryTest {
     private final AutoplayGameSessionRepository repository = new AutoplayGameSessionRepository();
 
     @Test
-    void updateReplacesOneGameOfTheRun() {
+    void updateReplacesOneGameOfTheSession() {
         repository.save(AutoplayGameSession.create(SESSION_ID, 2, Instant.parse("2026-09-05T14:00:00Z")));
 
         repository.update(SESSION_ID, session -> session.withGame(1, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41), AutoplayGameStatus.FINISHED)));
@@ -29,7 +29,7 @@ class AutoplayRunRepositoryTest {
     }
 
     @Test
-    void updatingAnUnknownRunDoesNothing() {
+    void updateDoesNothingWhenSessionIsUnknown() {
         repository.update(SESSION_ID, session -> session);
 
         assertThat(repository.findById(SESSION_ID)).isEmpty();
