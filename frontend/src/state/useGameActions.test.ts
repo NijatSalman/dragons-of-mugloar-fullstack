@@ -107,6 +107,46 @@ describe('useGameActions', () => {
     expect(dispatch).toHaveBeenLastCalledWith({ type: 'ADS_LOADED', ads })
   })
 
+  it('startAutoplayDispatchesTheNewSession', async () => {
+    const session = { sessionId: '84e1bfd2-3f61-467d-8fe5-90b9bc358e39', status: 'RUNNING' as const, startedAt: '2026-09-06T14:00:00Z', requested: 3, finished: 0, games: [] }
+    api.startAutoplay.mockResolvedValue(session)
+
+    await actionsFor().startAutoplay(3)
+
+    expect(api.startAutoplay).toHaveBeenCalledWith(3)
+    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['REQUEST_STARTED', 'SESSION_STARTED'])
+  })
+
+  it('refreshAutoplayUpdatesTheSessionWithoutMarkingTheUiBusy', async () => {
+    const session = { sessionId: '84e1bfd2-3f61-467d-8fe5-90b9bc358e39', status: 'FINISHED' as const, startedAt: '2026-09-06T14:00:00Z', requested: 1, finished: 1, games: [] }
+    api.getAutoplayProgress.mockResolvedValue(session)
+
+    await actionsFor().refreshAutoplay(session.sessionId)
+
+    expect(dispatch).toHaveBeenCalledTimes(1)
+    expect(dispatch).toHaveBeenCalledWith({ type: 'SESSION_UPDATED', session })
+  })
+
+  it('resumeGameLoadsTheGameAndItsBoard', async () => {
+    api.getGame.mockResolvedValue(game)
+    api.getRecommendedAds.mockResolvedValue(ads)
+
+    await actionsFor().resumeGame('ggLmesXI')
+
+    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['REQUEST_STARTED', 'GAME_LOADED', 'ADS_LOADED'])
+  })
+
+  it('resumeGameForgetsAGameTheServerNoLongerKnows', async () => {
+    localStorage.setItem('dragons.gameId', 'ggLmesXI')
+    api.getGame.mockResolvedValue(game)
+    api.getRecommendedAds.mockRejectedValue(new ApiError(404, 'Not Found', 'Game not found: gameId=ggLmesXI'))
+
+    await actionsFor().resumeGame('ggLmesXI')
+
+    expect(localStorage.getItem('dragons.gameId')).toBeNull()
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'GAME_EXPIRED' })
+  })
+
   it('resetGameForgetsTheRememberedGame', () => {
     localStorage.setItem('dragons.gameId', 'ggLmesXI')
 

@@ -46,6 +46,11 @@ describe('App', () => {
     expect(screen.getByText('You successfully solved the mission!')).toBeInTheDocument()
   })
 
+  it('showsTheAutoplayPanelWithAndWithoutAGame', () => {
+    renderWithGame(<App />)
+    expect(screen.getByRole('region', { name: 'Autoplay' })).toBeInTheDocument()
+  })
+
   it('showsTheErrorBannerWithTheTraceId', () => {
     renderWithGame(<App />, {
       error: new ApiError(502, 'Bad Gateway', 'Game server is currently unavailable', '4bf92f3577b34da6a3ce929d0e0e4736'),

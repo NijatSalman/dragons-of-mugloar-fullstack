@@ -1,6 +1,7 @@
 import { AppBar, Box, Container, Stack, Toolbar, Typography } from '@mui/material'
 import { useEffect } from 'react'
 import { AdBoard } from './components/AdBoard'
+import { AutoplayPanel } from './components/AutoplayPanel'
 import { DragonMark } from './components/DragonMark'
 import { ErrorBanner } from './components/ErrorBanner'
 import { GameOverBanner } from './components/GameOverBanner'
@@ -8,12 +9,14 @@ import { NoticeBar } from './components/NoticeBar'
 import { ShopPanel } from './components/ShopPanel'
 import { StartPanel } from './components/StartPanel'
 import { StatusBar } from './components/StatusBar'
+import { useAutoplayPolling } from './hooks/useAutoplayPolling'
 import { useGame } from './state/useGame'
 
 /** Page shell: title bar, the play area and a footer. Shows the start panel until a game is running. */
 export function App() {
   const { state, actions } = useGame()
   const playing = state.game !== undefined && !state.game.over
+  useAutoplayPolling(state.session, actions.refreshAutoplay)
 
   // The catalogue is the same for every game; load it once a game exists.
   useEffect(() => {
@@ -42,6 +45,7 @@ export function App() {
               <ShopPanel items={state.shop} gold={state.game.gold} disabled={state.busy} onBuy={(itemId) => void actions.buyItem(itemId)} />
             </Box>
           )}
+          <AutoplayPanel session={state.session} disabled={state.busy} onStart={(games) => void actions.startAutoplay(games)} />
         </Stack>
       </Container>
       {state.notice && <NoticeBar notice={state.notice} onDismiss={actions.dismissNotice} />}

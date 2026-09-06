@@ -32,8 +32,10 @@ export type Action =
   | { type: 'AD_SOLVED'; result: SolveResult }
   | { type: 'SHOP_LOADED'; shop: ShopItem[] }
   | { type: 'ITEM_BOUGHT'; itemId: string; result: PurchaseResult }
+  | { type: 'SESSION_STARTED'; session: AutoplaySession }
   | { type: 'SESSION_UPDATED'; session: AutoplaySession }
   | { type: 'GAME_RESET' }
+  | { type: 'GAME_EXPIRED' }
 
 export function gameReducer(state: State, action: Action): State {
   switch (action.type) {
@@ -69,10 +71,14 @@ export function gameReducer(state: State, action: Action): State {
           ? { message: `Bought ${action.itemId}.`, tone: 'success' }
           : { message: `Could not buy ${action.itemId}: not enough gold.`, tone: 'warning' },
       }
-    case 'SESSION_UPDATED':
+    case 'SESSION_STARTED':
       return { ...state, session: action.session, busy: false }
+    case 'SESSION_UPDATED': // a background poll: never touches busy, so the board keeps working
+      return { ...state, session: action.session }
     case 'GAME_RESET':
       return { ...initialState, session: state.session }
+    case 'GAME_EXPIRED':
+      return { ...initialState, session: state.session, notice: { message: 'Your previous game has expired on the game server.', tone: 'info' } }
   }
 }
 

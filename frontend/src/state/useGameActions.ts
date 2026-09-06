@@ -38,11 +38,22 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
           await refreshAds(game.gameId)
         }),
 
-      resumeGame: (id: string) =>
-        run(async () => {
+      /** After a page reload. The game server forgets games after a while; then we forget them too. */
+      resumeGame: async (id: string) => {
+        dispatch({ type: 'REQUEST_STARTED' })
+        try {
           dispatch({ type: 'GAME_LOADED', game: await gameApi.getGame(id) })
           await refreshAds(id)
-        }),
+        } catch (failure) {
+          const error = toApiError(failure)
+          if (error.status === 404 || error.status === 410) {
+            localStorage.removeItem(GAME_ID_KEY)
+            dispatch({ type: 'GAME_EXPIRED' })
+          } else {
+            dispatch({ type: 'REQUEST_FAILED', error })
+          }
+        }
+      },
 
       refreshAds: () => run(() => refreshAds(requireGame())),
 
@@ -68,13 +79,17 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
 
       startAutoplay: (games: number) =>
         run(async () => {
-          dispatch({ type: 'SESSION_UPDATED', session: await gameApi.startAutoplay(games) })
+          dispatch({ type: 'SESSION_STARTED', session: await gameApi.startAutoplay(games) })
         }),
 
-      refreshAutoplay: (sessionId: string) =>
-        run(async () => {
+      /** Called by the polling hook; runs in the background, so it does not mark the UI busy. */
+      refreshAutoplay: async (sessionId: string) => {
+        try {
           dispatch({ type: 'SESSION_UPDATED', session: await gameApi.getAutoplayProgress(sessionId) })
-        }),
+        } catch (failure) {
+          dispatch({ type: 'REQUEST_FAILED', error: toApiError(failure) })
+        }
+      },
 
       resetGame: () => {
         localStorage.removeItem(GAME_ID_KEY)

@@ -88,7 +88,7 @@ describe('gameReducer', () => {
     expect(state.notice).toEqual({ message: 'Bought cs.', tone: 'success' })
   })
 
-  it('sessionUpdatedStoresTheAutoplaySession', () => {
+  it('sessionUpdatedStoresTheSessionWithoutTouchingBusy', () => {
     const session: AutoplaySession = {
       sessionId: '84e1bfd2-3f61-467d-8fe5-90b9bc358e39',
       status: 'RUNNING',
@@ -98,9 +98,17 @@ describe('gameReducer', () => {
       games: [],
     }
 
-    const state = gameReducer(initialState, { type: 'SESSION_UPDATED', session })
+    const state = gameReducer({ ...initialState, busy: true }, { type: 'SESSION_UPDATED', session })
 
     expect(state.session).toEqual(session)
+    expect(state.busy).toBe(true)
+  })
+
+  it('gameExpiredForgetsTheGameAndExplainsWhy', () => {
+    const state = gameReducer(playing, { type: 'GAME_EXPIRED' })
+
+    expect(state.game).toBeUndefined()
+    expect(state.notice?.message).toMatch(/expired/)
   })
 
   it('gameResetForgetsTheGameButKeepsTheAutoplaySession', () => {

@@ -125,6 +125,22 @@ export const theme = createTheme({
         label: { color: colors.ink, fontWeight: 600 },
       },
     },
+    MuiTableCell: {
+      styleOverrides: {
+        root: { color: colors.ink, borderBottomColor: 'rgba(43,33,24,0.2)' },
+        head: { fontFamily: '"Cinzel", Georgia, serif', fontWeight: 700 },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: { color: 'rgba(43,33,24,0.7)' },
+      },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: { color: colors.ember },
+      },
+    },
     MuiMenu: {
       styleOverrides: {
         paper: { backgroundImage: 'none', backgroundColor: colors.parchment },
