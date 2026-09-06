@@ -2,7 +2,7 @@ import { ApiError } from '../api/http'
 import type { Ad, AutoplaySession, Game, ShopItem } from '../api/types'
 import { gameReducer, initialState, type State } from './gameReducer'
 
-const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 120, level: 1, score: 300, highScore: 300, turn: 15, over: false }
+const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 120, level: 1, score: 300, highScore: 300, turn: 15, over: false, origin: 'MANUAL' }
 const ad: Ad = {
   adId: 'DSAUBsXa',
   message: 'Help Majid Desprez to transport a magic beer mug to steppe in Falldean',
@@ -119,6 +119,15 @@ describe('gameReducer', () => {
 
     expect(state.game).toBeUndefined()
     expect(state.notice?.message).toMatch(/expired/)
+  })
+
+  it('leaderboardLoadedStoresTheRankedGames', () => {
+    const games = [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY' as const, score: 5239, turn: 201, lives: 0, gold: 87, level: 3, over: true }]
+
+    const state = gameReducer({ ...initialState, busy: true }, { type: 'LEADERBOARD_LOADED', games })
+
+    expect(state.leaderboard).toEqual(games)
+    expect(state.busy).toBe(false)
   })
 
   it('gameResetForgetsTheGameButKeepsTheAutoplaySession', () => {

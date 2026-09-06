@@ -89,6 +89,8 @@ function SessionProgress({ session }: { session: AutoplaySession }) {
             <TableCell align="right">Score</TableCell>
             <TableCell align="right">Turn</TableCell>
             <TableCell align="right">Lives</TableCell>
+            <TableCell align="right">Gold</TableCell>
+            <TableCell align="right">Level</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -118,6 +120,8 @@ function GameRow({ game }: { game: AutoplayGameProgress }) {
       <TableCell align="right">{game.score}</TableCell>
       <TableCell align="right">{game.turn}</TableCell>
       <TableCell align="right">{game.lives}</TableCell>
+      <TableCell align="right">{game.gold}</TableCell>
+      <TableCell align="right">{game.level}</TableCell>
     </TableRow>
   )
 }

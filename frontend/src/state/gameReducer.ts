@@ -1,5 +1,5 @@
 import type { ApiError } from '../api/http'
-import type { Ad, AutoplaySession, Game, PurchaseResult, ShopItem, SolveResult } from '../api/types'
+import type { Ad, AutoplaySession, Game, GameSummary, PurchaseResult, ShopItem, SolveResult } from '../api/types'
 
 /** A short message about the last turn, shown as a toast. */
 export interface Notice {
@@ -13,12 +13,13 @@ export interface State {
   ads: Ad[]
   shop: ShopItem[]
   session?: AutoplaySession
+  leaderboard: GameSummary[]
   busy: boolean
   error?: ApiError
   notice?: Notice
 }
 
-export const initialState: State = { ads: [], shop: [], busy: false }
+export const initialState: State = { ads: [], shop: [], leaderboard: [], busy: false }
 
 /** What can happen. Each action says what occurred; the reducer decides what it means for the state. */
 export type Action =
@@ -35,6 +36,7 @@ export type Action =
   | { type: 'SESSION_STARTED'; session: AutoplaySession }
   | { type: 'SESSION_UPDATED'; session: AutoplaySession }
   | { type: 'SESSION_FORGOTTEN' }
+  | { type: 'LEADERBOARD_LOADED'; games: GameSummary[] }
   | { type: 'GAME_RESET' }
   | { type: 'GAME_EXPIRED' }
 
@@ -49,7 +51,7 @@ export function gameReducer(state: State, action: Action): State {
     case 'NOTICE_DISMISSED':
       return { ...state, notice: undefined }
     case 'GAME_STARTED':
-      return { ...initialState, session: state.session, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
+      return { ...initialState, session: state.session, leaderboard: state.leaderboard, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
     case 'GAME_LOADED':
       return { ...state, game: action.game, busy: false }
     case 'ADS_LOADED':
@@ -78,10 +80,12 @@ export function gameReducer(state: State, action: Action): State {
       return { ...state, session: action.session }
     case 'SESSION_FORGOTTEN':
       return { ...state, session: undefined }
+    case 'LEADERBOARD_LOADED':
+      return { ...state, leaderboard: action.games, busy: false }
     case 'GAME_RESET':
-      return { ...initialState, session: state.session }
+      return { ...initialState, session: state.session, leaderboard: state.leaderboard }
     case 'GAME_EXPIRED':
-      return { ...initialState, session: state.session, notice: { message: 'Your previous game has expired on the game server.', tone: 'info' } }
+      return { ...initialState, session: state.session, leaderboard: state.leaderboard, notice: { message: 'Your previous game has expired on the game server.', tone: 'info' } }
   }
 }
 

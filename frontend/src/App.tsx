@@ -5,6 +5,7 @@ import { AutoplayPanel } from './components/AutoplayPanel'
 import { DragonMark } from './components/DragonMark'
 import { ErrorBanner } from './components/ErrorBanner'
 import { GameOverBanner } from './components/GameOverBanner'
+import { LeaderboardPanel } from './components/LeaderboardPanel'
 import { NoticeBar } from './components/NoticeBar'
 import { ShopPanel } from './components/ShopPanel'
 import { StartPanel } from './components/StartPanel'
@@ -20,6 +21,11 @@ export function App() {
   const [tab, setTab] = useState<Tab>('play')
   const playing = state.game !== undefined && !state.game.over
   useAutoplayPolling(state.session, actions.refreshAutoplay)
+
+  // The leaderboard is fetched whenever its tab is opened.
+  useEffect(() => {
+    if (tab === 'leaderboard') void actions.loadLeaderboard()
+  }, [tab, actions])
 
   // The catalogue is the same for every game; load it once a game exists.
   useEffect(() => {
@@ -48,7 +54,9 @@ export function App() {
           {tab === 'autoplay' && (
             <AutoplayPanel session={state.session} disabled={state.busy} onStart={(games) => void actions.startAutoplay(games)} />
           )}
-          {tab === 'leaderboard' && <Typography>The leaderboard is coming in the next step.</Typography>}
+          {tab === 'leaderboard' && (
+            <LeaderboardPanel games={state.leaderboard} disabled={state.busy} onRefresh={() => void actions.loadLeaderboard()} />
+          )}
         </Stack>
       </Container>
       {state.notice && <NoticeBar notice={state.notice} onDismiss={actions.dismissNotice} />}

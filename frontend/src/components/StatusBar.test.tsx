@@ -4,7 +4,7 @@ import { StatusBar } from './StatusBar'
 
 describe('StatusBar', () => {
   it('showsLivesGoldScoreLevelTurnAndGameId', () => {
-    render(<StatusBar game={{ gameId: 'ggLmesXI', lives: 2, gold: 120, level: 1, score: 1462, highScore: 1462, turn: 41, over: false }} onLeave={vi.fn()} />)
+    render(<StatusBar game={{ gameId: 'ggLmesXI', lives: 2, gold: 120, level: 1, score: 1462, highScore: 1462, turn: 41, over: false, origin: 'MANUAL' }} onLeave={vi.fn()} />)
 
     expect(screen.getByText('2 lives')).toBeInTheDocument()
     expect(screen.getByText('120 gold')).toBeInTheDocument()
@@ -16,7 +16,7 @@ describe('StatusBar', () => {
 
   it('leaveGameButtonReportsTheWishToLeave', async () => {
     const onLeave = vi.fn()
-    render(<StatusBar game={{ gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false }} onLeave={onLeave} />)
+    render(<StatusBar game={{ gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false, origin: 'MANUAL' }} onLeave={onLeave} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Leave game' }))
 

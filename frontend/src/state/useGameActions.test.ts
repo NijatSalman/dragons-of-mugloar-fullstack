@@ -14,11 +14,12 @@ vi.mock('../api/gameApi', () => ({
     buyItem: vi.fn(),
     startAutoplay: vi.fn(),
     getAutoplayProgress: vi.fn(),
+    getGames: vi.fn(),
   },
 }))
 
 const api = vi.mocked(gameApi)
-const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false }
+const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false, origin: 'MANUAL' }
 const ads: Ad[] = [
   {
     adId: 'DSAUBsXa',

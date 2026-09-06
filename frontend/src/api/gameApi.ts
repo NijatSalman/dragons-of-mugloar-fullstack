@@ -1,5 +1,5 @@
 import { request } from './http'
-import type { Ad, AutoplaySession, Game, PurchaseResult, Reputation, ShopItem, SolveResult } from './types'
+import type { Ad, AutoplaySession, Game, GameSummary, PurchaseResult, Reputation, ShopItem, SolveResult } from './types'
 
 /** One function per backend endpoint. Components call these and never build URLs themselves. */
 const BASE = '/api/v1'
@@ -8,6 +8,8 @@ export const gameApi = {
   startGame: () => request<Game>('POST', `${BASE}/games`),
 
   getGame: (gameId: string) => request<Game>('GET', `${BASE}/games/${gameId}`),
+
+  getGames: () => request<GameSummary[]>('GET', `${BASE}/games`),
 
   getRecommendedAds: (gameId: string) => request<Ad[]>('GET', `${BASE}/games/${gameId}/ads`),
 

@@ -56,6 +56,17 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
+  it('loadsAndShowsTheLeaderboardOnItsTab', async () => {
+    const { actions } = renderWithGame(<App />, {
+      leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3, over: true }],
+    })
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Leaderboard' }))
+
+    expect(actions.loadLeaderboard).toHaveBeenCalled()
+    expect(screen.getByText('jz21oOWI')).toBeInTheDocument()
+  })
+
   it('leaveGameReturnsToTheStartPanel', async () => {
     const { actions } = renderWithGame(<App />, { game: runningGame })
 

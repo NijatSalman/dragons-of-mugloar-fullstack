@@ -1,5 +1,7 @@
 /** Shapes of the backend's JSON responses. Field names match the Java response records one to one. */
 
+export type GameOrigin = 'MANUAL' | 'AUTOPLAY'
+
 export interface Game {
   gameId: string
   lives: number
@@ -8,6 +10,19 @@ export interface Game {
   score: number
   highScore: number
   turn: number
+  over: boolean
+  origin: GameOrigin
+}
+
+/** One row of the leaderboard. */
+export interface GameSummary {
+  gameId: string
+  origin: GameOrigin
+  score: number
+  turn: number
+  lives: number
+  gold: number
+  level: number
   over: boolean
 }
 
@@ -60,6 +75,8 @@ export interface AutoplayGameProgress {
   score: number
   turn: number
   lives: number
+  gold: number
+  level: number
   error?: string
 }
 

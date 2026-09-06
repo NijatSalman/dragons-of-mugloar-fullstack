@@ -103,6 +103,11 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
         }
       },
 
+      loadLeaderboard: () =>
+        run(async () => {
+          dispatch({ type: 'LEADERBOARD_LOADED', games: await gameApi.getGames() })
+        }),
+
       resetGame: () => {
         localStorage.removeItem(GAME_ID_KEY)
         dispatch({ type: 'GAME_RESET' })

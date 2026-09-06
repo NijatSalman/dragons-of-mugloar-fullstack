@@ -10,6 +10,7 @@ export const runningGame: Game = {
   highScore: 300,
   turn: 15,
   over: false,
+  origin: 'MANUAL',
 }
 
 export const finishedGame: Game = { ...runningGame, lives: 0, score: 5239, turn: 201, over: true }
