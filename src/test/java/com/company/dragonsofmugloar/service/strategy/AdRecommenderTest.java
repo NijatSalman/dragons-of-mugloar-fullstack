@@ -3,23 +3,25 @@ package com.company.dragonsofmugloar.service.strategy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import com.company.dragonsofmugloar.domain.Ad;
-import com.company.dragonsofmugloar.domain.AdRecommendation;
-import com.company.dragonsofmugloar.domain.Probability;
+import com.company.dragonsofmugloar.TestProperties;
+import com.company.dragonsofmugloar.domain.ad.Ad;
+import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
+import com.company.dragonsofmugloar.domain.ad.Probability;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 /** Ad texts, ids, rewards and expiry values mirror what the game server really sends. */
 class AdRecommenderTest {
 
-    private final AdRecommender recommender = new AdRecommender();
+    private final AdRecommender recommender = new AdRecommender(TestProperties.autoplay());
 
     @Test
     void expectedValueIsRewardWeightedByChance() {
         Ad ad = new Ad("DSAUBsXa", "Help Majid Desprez to transport a magic beer mug to steppe in Falldean",
                 40, 7, Probability.QUITE_LIKELY);
 
-        AdRecommendation recommendation = recommender.recommend(ad);
+        AdRecommendation recommendation = recommender.recommendAd(ad);
 
         assertThat(recommendation.successChance()).isEqualTo(0.80);
         assertThat(recommendation.expectedValue()).isCloseTo(32.0, within(1e-9));
@@ -35,7 +37,7 @@ class AdRecommenderTest {
         Ad sameValueSafer = new Ad("ZsHIk01N", "Help Preecha Saunders to clean their chariot",
                 50, 7, Probability.WALK_IN_THE_PARK);                                             // 45
 
-        List<AdRecommendation> result = recommender.recommend(List.of(smallAndSafe, bigButRisky, sameValueSafer));
+        List<AdRecommendation> result = recommender.recommendAds(List.of(smallAndSafe, bigButRisky, sameValueSafer));
 
         assertThat(result).extracting(recommendation -> recommendation.ad().adId())
                 .containsExactly("ZsHIk01N", "3haCbU60", "HiCtYxHC");
@@ -45,7 +47,7 @@ class AdRecommenderTest {
     void goodOddsEnoughTimeAndHonestWorkIsRecommended() {
         Ad ad = new Ad("ulnMLC86", "Help Egídio Holloway to fix their wagon", 3, 2, Probability.GAMBLE);
 
-        assertThat(recommender.recommend(ad).recommended()).isTrue();
+        assertThat(recommender.recommendAd(ad).recommended()).isTrue();
     }
 
     @Test
@@ -54,7 +56,7 @@ class AdRecommenderTest {
                 "Help Helmine Statham to write their biographical novel about their difficulties with a deranged cat",
                 30, 7, Probability.RISKY);
 
-        assertThat(recommender.recommend(ad).recommended()).isFalse();
+        assertThat(recommender.recommendAd(ad).recommended()).isFalse();
     }
 
     @Test
@@ -62,7 +64,7 @@ class AdRecommenderTest {
         Ad ad = new Ad("72V2caSU", "Help Prakash Osbourne to write their biographical novel about their difficulties "
                 + "with a deranged water", 45, 1, Probability.PIECE_OF_CAKE);
 
-        assertThat(recommender.recommend(ad).recommended()).isFalse();
+        assertThat(recommender.recommendAd(ad).recommended()).isFalse();
     }
 
     @Test
@@ -72,8 +74,8 @@ class AdRecommenderTest {
         Ad kidnapping = new Ad("jWMeTc6h", "Kidnap Blair Bateson's long lost chicken and bring it to Frostdinny",
                 200, 7, Probability.SURE_THING);
 
-        assertThat(recommender.recommend(theft).recommended()).isFalse();
-        assertThat(recommender.recommend(kidnapping).recommended()).isFalse();
+        assertThat(recommender.recommendAd(theft).recommended()).isFalse();
+        assertThat(recommender.recommendAd(kidnapping).recommended()).isFalse();
     }
 
     @Test
@@ -81,7 +83,7 @@ class AdRecommenderTest {
         Ad ad = new Ad("Ww6aT9xZ", "Help Cassianus Orange to polish their stainless steel armour", 25, 7,
                 Probability.SURE_THING);
 
-        assertThat(recommender.recommend(ad).recommended()).isTrue();
+        assertThat(recommender.recommendAd(ad).recommended()).isTrue();
     }
 
     @Test
@@ -89,9 +91,61 @@ class AdRecommenderTest {
         Ad ad = new Ad("ggLmesXI", "Create an advertisement campaign for Vendelín Derrickson to promote their "
                 + "wagon based business", 32, 7, Probability.UNKNOWN);
 
-        AdRecommendation recommendation = recommender.recommend(ad);
+        AdRecommendation recommendation = recommender.recommendAd(ad);
 
         assertThat(recommendation.recommended()).isFalse();
         assertThat(recommendation.expectedValue()).isEqualTo(16.0);
+    }
+
+    @Test
+    void withPlentyOfLivesTheMostValuableRecommendedAdIsChosen() {
+        List<AdRecommendation> board = recommender.recommendAds(List.of(
+                new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
+                new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
+                        Probability.PIECE_OF_CAKE)));
+
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3);
+
+        assertThat(choice).map(chosen -> chosen.ad().adId()).contains("8ZvZ9jRs");
+    }
+
+    @Test
+    void withFewLivesOnlySafeAdsAreChosen() {
+        List<AdRecommendation> board = recommender.recommendAds(List.of(
+                new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
+                new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
+                        Probability.PIECE_OF_CAKE)));
+
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 2);
+
+        assertThat(choice).map(chosen -> chosen.ad().adId()).contains("KdX1gKEs");
+    }
+
+    @Test
+    void withFewLivesAndNoSafeAdTheSafestRecommendedOneIsChosen() {
+        List<AdRecommendation> board = recommender.recommendAds(List.of(
+                new Ad("8ZvZ9jRs", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
+                new Ad("Vh8MgCru", "Help Päivä Braddock to transport a magic pot to field in Oldwater", 8, 7,
+                        Probability.GAMBLE)));
+
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 1);
+
+        assertThat(choice).map(chosen -> chosen.ad().adId()).contains("8ZvZ9jRs");
+    }
+
+    @Test
+    void whenNothingIsRecommendedTheSafestAdOnTheBoardIsChosen() {
+        List<AdRecommendation> board = recommender.recommendAds(List.of(
+                new Ad("1m9zkK9h", "Create an advertisement campaign for Liron Blackbourne", 35, 7, Probability.SUICIDE_MISSION),
+                new Ad("58rrbJ0D", "Escort Imogene Wild to savannah in Strongchester", 68, 7, Probability.PLAYING_WITH_FIRE)));
+
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3);
+
+        assertThat(choice).map(chosen -> chosen.ad().adId()).contains("58rrbJ0D");
+    }
+
+    @Test
+    void anEmptyBoardGivesNoChoice() {
+        assertThat(recommender.chooseAd(List.of(), 3)).isEmpty();
     }
 }

@@ -56,7 +56,7 @@ class ApiExceptionHandlerTest {
     void rejectedRequestIs409() throws Exception {
         mockMvc.perform(get("/throw/rejected"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("Game server rejected request: gameId=ggLmesXI"));
+                .andExpect(jsonPath("$.detail").value("Ad not available: gameId=ggLmesXI, adId=HiCtYxHC"));
     }
 
     @Test
@@ -100,12 +100,12 @@ class ApiExceptionHandlerTest {
 
         @GetMapping("/throw/rejected")
         void rejected() {
-            throw new GameApiException(GameApiException.Reason.REJECTED, "Game server rejected request: gameId=ggLmesXI");
+            throw new AdNotAvailableException("ggLmesXI", "HiCtYxHC");
         }
 
         @GetMapping("/throw/unavailable")
         void unavailable() {
-            throw new GameApiException(GameApiException.Reason.UNAVAILABLE, "Game server failed: gameId=ggLmesXI, status=503");
+            throw new GameApiException("Game server failed: gameId=ggLmesXI, status=503");
         }
 
         @GetMapping("/throw/unexpected")

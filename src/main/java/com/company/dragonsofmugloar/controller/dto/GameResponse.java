@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.Game;
+import com.company.dragonsofmugloar.domain.game.Game;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Current state of a game")

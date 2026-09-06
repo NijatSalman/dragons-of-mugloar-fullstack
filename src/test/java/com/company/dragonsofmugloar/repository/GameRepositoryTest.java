@@ -2,7 +2,7 @@ package com.company.dragonsofmugloar.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.company.dragonsofmugloar.domain.Game;
+import com.company.dragonsofmugloar.domain.game.Game;
 import org.junit.jupiter.api.Test;
 
 class GameRepositoryTest {

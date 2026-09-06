@@ -1,4 +1,4 @@
-package com.company.dragonsofmugloar.domain;
+package com.company.dragonsofmugloar.domain.ad;
 
 /**
  * Our judgement of one ad: how likely it is to succeed, what it is worth on average, and whether it is a

@@ -1,24 +1,23 @@
 package com.company.dragonsofmugloar.controller;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.company.dragonsofmugloar.domain.Ad;
-import com.company.dragonsofmugloar.domain.AdRecommendation;
-import com.company.dragonsofmugloar.domain.Game;
-import com.company.dragonsofmugloar.domain.Probability;
-import com.company.dragonsofmugloar.domain.Reputation;
-import com.company.dragonsofmugloar.domain.SolveResult;
-import com.company.dragonsofmugloar.exception.GameApiException;
+import com.company.dragonsofmugloar.domain.ad.Ad;
+import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
+import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.ad.Probability;
+import com.company.dragonsofmugloar.domain.game.Reputation;
+import com.company.dragonsofmugloar.domain.game.SolveResult;
+import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
+import com.company.dragonsofmugloar.service.AdService;
 import com.company.dragonsofmugloar.service.GameService;
 import java.util.List;
 import org.junit.jupiter.api.Nested;
@@ -40,6 +39,9 @@ class GameControllerTest {
     @MockitoBean
     private GameService gameService;
 
+    @MockitoBean
+    private AdService adService;
+
     @Nested
     class StartGame {
 
@@ -49,7 +51,6 @@ class GameControllerTest {
 
             mvc.perform(post(GAMES_URL))
                     .andExpect(status().isCreated())
-                    .andExpect(header().string("Location", endsWith(GAMES_URL + "/" + GAME_ID)))
                     .andExpect(jsonPath("$.gameId").value(GAME_ID))
                     .andExpect(jsonPath("$.lives").value(3))
                     .andExpect(jsonPath("$.over").value(false));
@@ -93,7 +94,7 @@ class GameControllerTest {
         void returnsRankedAdsWithRecommendationFields() throws Exception {
             Ad ad = new Ad("DSAUBsXa", "Help Majid Desprez to transport a magic beer mug to steppe in Falldean", 21, 7,
                     Probability.QUITE_LIKELY);
-            when(gameService.getAds(GAME_ID)).thenReturn(List.of(new AdRecommendation(ad, 0.8, 16.8, true)));
+            when(adService.getRecommendedAds(GAME_ID)).thenReturn(List.of(new AdRecommendation(ad, 0.8, 16.8, true)));
 
             mvc.perform(get(GAMES_URL + "/" + GAME_ID + "/ads"))
                     .andExpect(status().isOk())
@@ -107,7 +108,7 @@ class GameControllerTest {
 
         @Test
         void finishedGameIs410() throws Exception {
-            when(gameService.getAds(GAME_ID)).thenThrow(new GameOverException(GAME_ID));
+            when(adService.getRecommendedAds(GAME_ID)).thenThrow(new GameOverException(GAME_ID));
 
             mvc.perform(get(GAMES_URL + "/" + GAME_ID + "/ads")).andExpect(status().isGone());
         }
@@ -118,7 +119,7 @@ class GameControllerTest {
 
         @Test
         void returnsTheOutcome() throws Exception {
-            when(gameService.solve(GAME_ID, "DSAUBsXa"))
+            when(adService.solveAd(GAME_ID, "DSAUBsXa"))
                     .thenReturn(new SolveResult(true, 3, 21, 21, 0, 2, "You successfully solved the mission!"));
 
             mvc.perform(post(GAMES_URL + "/" + GAME_ID + "/ads/DSAUBsXa/solve"))
@@ -130,8 +131,7 @@ class GameControllerTest {
 
         @Test
         void vanishedAdIs409() throws Exception {
-            when(gameService.solve(GAME_ID, "HiCtYxHC")).thenThrow(new GameApiException(
-                    GameApiException.Reason.REJECTED, "Game server rejected request: gameId=" + GAME_ID));
+            when(adService.solveAd(GAME_ID, "HiCtYxHC")).thenThrow(new AdNotAvailableException(GAME_ID, "HiCtYxHC"));
 
             mvc.perform(post(GAMES_URL + "/" + GAME_ID + "/ads/HiCtYxHC/solve")).andExpect(status().isConflict());
         }

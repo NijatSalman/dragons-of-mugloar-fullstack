@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.repository;
 
-import com.company.dragonsofmugloar.domain.Game;
+import com.company.dragonsofmugloar.domain.game.Game;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

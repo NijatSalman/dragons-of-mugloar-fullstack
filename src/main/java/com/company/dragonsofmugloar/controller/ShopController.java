@@ -27,13 +27,13 @@ public class ShopController {
     @GetMapping
     @Operation(summary = "Items for sale")
     public List<ShopItemResponse> getItems(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId) {
-        return shopService.getItems(gameId).stream().map(ShopItemResponse::from).toList();
+        return shopService.getShopItems(gameId).stream().map(ShopItemResponse::from).toList();
     }
 
     @PostMapping("/{itemId}")
     @Operation(summary = "Buy an item; costs one turn even if the purchase fails")
-    public PurchaseResultResponse buy(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId,
+    public PurchaseResultResponse buyItem(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId,
                                 @PathVariable @Pattern(regexp = ID_PATTERN) String itemId) {
-        return PurchaseResultResponse.from(shopService.buy(gameId, itemId));
+        return PurchaseResultResponse.from(shopService.buyItem(gameId, itemId));
     }
 }

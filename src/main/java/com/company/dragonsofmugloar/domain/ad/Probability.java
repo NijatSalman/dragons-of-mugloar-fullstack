@@ -1,4 +1,4 @@
-package com.company.dragonsofmugloar.domain;
+package com.company.dragonsofmugloar.domain.ad;
 
 import java.util.Arrays;
 import java.util.Map;

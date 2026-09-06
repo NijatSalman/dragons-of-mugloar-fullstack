@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.PurchaseResult;
+import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Outcome of a purchase; the turn advances even when it fails")

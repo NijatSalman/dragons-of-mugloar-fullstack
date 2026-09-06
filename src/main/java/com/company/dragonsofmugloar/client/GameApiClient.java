@@ -1,11 +1,11 @@
 package com.company.dragonsofmugloar.client;
 
-import com.company.dragonsofmugloar.domain.Ad;
-import com.company.dragonsofmugloar.domain.Game;
-import com.company.dragonsofmugloar.domain.PurchaseResult;
-import com.company.dragonsofmugloar.domain.Reputation;
-import com.company.dragonsofmugloar.domain.ShopItem;
-import com.company.dragonsofmugloar.domain.SolveResult;
+import com.company.dragonsofmugloar.domain.ad.Ad;
+import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.PurchaseResult;
+import com.company.dragonsofmugloar.domain.game.Reputation;
+import com.company.dragonsofmugloar.domain.shop.ShopItem;
+import com.company.dragonsofmugloar.domain.game.SolveResult;
 import java.util.List;
 
 /**
@@ -21,11 +21,11 @@ public interface GameApiClient {
 
     List<Ad> getAds(String gameId);
 
-    SolveResult solve(String gameId, String adId);
+    SolveResult solveAd(String gameId, String adId);
 
-    List<ShopItem> getShop(String gameId);
+    List<ShopItem> getShopItems(String gameId);
 
-    PurchaseResult buy(String gameId, String itemId);
+    PurchaseResult buyItem(String gameId, String itemId);
 
     Reputation investigateReputation(String gameId);
 }

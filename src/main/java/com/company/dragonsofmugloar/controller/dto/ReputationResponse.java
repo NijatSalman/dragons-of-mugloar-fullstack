@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.Reputation;
+import com.company.dragonsofmugloar.domain.game.Reputation;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "How the factions of Mugloar see the player; investigating costs one turn")

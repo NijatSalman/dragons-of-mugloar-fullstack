@@ -1,4 +1,4 @@
-package com.company.dragonsofmugloar.domain;
+package com.company.dragonsofmugloar.domain.ad;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

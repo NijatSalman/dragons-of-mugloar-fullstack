@@ -21,12 +21,12 @@ final class MessageDecoder {
         }
         return switch (encryption) {
             case BASE64 -> new String(Base64.getDecoder().decode(text), StandardCharsets.UTF_8);
-            case ROT13 -> rot13(text);
+            case ROT13 -> decodeRot13(text);
             default -> text;
         };
     }
 
-    private static String rot13(String text) {
+    private static String decodeRot13(String text) {
         StringBuilder out = new StringBuilder(text.length());
         for (char letter : text.toCharArray()) {
             if (letter >= 'a' && letter <= 'z') {
