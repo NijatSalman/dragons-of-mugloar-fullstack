@@ -7,12 +7,15 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.company.dragonsofmugloar.config.CacheConfig;
 import com.company.dragonsofmugloar.config.GameApiProperties;
-import com.company.dragonsofmugloar.config.ResilienceConfig;
 import com.company.dragonsofmugloar.domain.shop.ShopItem;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import io.github.resilience4j.springboot.ratelimiter.autoconfigure.RateLimiterAutoConfiguration;
+import io.github.resilience4j.springboot.retry.autoconfigure.RetryAutoConfiguration;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
@@ -25,7 +28,8 @@ import org.springframework.test.web.client.MockRestServiceServer;
 
 @RestClientTest(GameApiRestClient.class)
 @EnableConfigurationProperties(GameApiProperties.class)
-@Import({ResilienceConfig.class, CacheConfig.class, GameApiRestClientCacheTest.InMemoryCache.class})
+@Import({CacheConfig.class, GameApiRestClientCacheTest.InMemoryCache.class})
+@ImportAutoConfiguration({AopAutoConfiguration.class, RateLimiterAutoConfiguration.class, RetryAutoConfiguration.class})
 @TestPropertySource(properties = "game-api.base-url=https://game.test/api/v2")
 class GameApiRestClientCacheTest {
 

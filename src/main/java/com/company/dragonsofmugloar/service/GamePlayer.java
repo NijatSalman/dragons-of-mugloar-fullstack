@@ -57,7 +57,7 @@ public class GamePlayer {
     private Optional<AdRecommendation> chooseBestAd(String gameId) {
         Game game = gameService.getGame(gameId);
         List<AdRecommendation> board = adService.getRecommendedAds(gameId);
-        return adRecommender.chooseAd(board, game.lives());
+        return adRecommender.chooseAd(board, game.lives(), game.gold());
     }
 
     private void solveChosenAd(String gameId, AdRecommendation chosen) {

@@ -10,7 +10,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.company.dragonsofmugloar.config.GameApiProperties;
-import com.company.dragonsofmugloar.config.ResilienceConfig;
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.game.Game;
 import com.company.dragonsofmugloar.domain.ad.Probability;
@@ -22,11 +21,16 @@ import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
+import com.company.dragonsofmugloar.exception.GameServerQuotaExceededException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import io.github.resilience4j.springboot.ratelimiter.autoconfigure.RateLimiterAutoConfiguration;
+import io.github.resilience4j.springboot.retry.autoconfigure.RetryAutoConfiguration;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -37,8 +41,12 @@ import org.springframework.test.web.client.MockRestServiceServer;
 
 @RestClientTest(GameApiRestClient.class)
 @EnableConfigurationProperties(GameApiProperties.class)
-@Import(ResilienceConfig.class)
-@TestPropertySource(properties = "game-api.base-url=https://game.test/api/v2")
+@ImportAutoConfiguration({AopAutoConfiguration.class, RateLimiterAutoConfiguration.class, RetryAutoConfiguration.class})
+@TestPropertySource(properties = {
+        "game-api.base-url=https://game.test/api/v2",
+        "resilience4j.retry.instances.gameApiRead.wait-duration=50ms",
+        "resilience4j.retry.instances.gameApiRead.enable-exponential-backoff=false",
+        "resilience4j.retry.instances.gameApiWrite.wait-duration=50ms"})
 class GameApiRestClientTest {
 
     private static final String BASE = "https://game.test/api/v2";
@@ -155,7 +163,7 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void getAdsRetriesOnceWhenServerAnswers503() {
+    void getAdsRetriesWhenServerAnswers503() {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/messages"))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/messages"))
@@ -167,7 +175,7 @@ class GameApiRestClientTest {
 
     @Test
     void getShopItemsThrowsGameApiExceptionWhenServerKeepsFailing() {
-        server.expect(times(2), requestTo(BASE + "/ggLmesXI/shop"))
+        server.expect(times(5), requestTo(BASE + "/ggLmesXI/shop"))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
 
         assertThatThrownBy(() -> client.getShopItems("ggLmesXI"))
@@ -193,5 +201,30 @@ class GameApiRestClientTest {
         assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa"))
                 .isInstanceOf(GameApiException.class)
                 .hasMessageContaining("Game server unreachable: gameId=ggLmesXI");
+    }
+
+    @Test
+    void solveAdRepeatsWhenServerRefusesForQuota() {
+        server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa"))
+                .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));
+        server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa"))
+                .andRespond(withSuccess("""
+                        {"success":true,"lives":3,"gold":4,"score":4,"highScore":0,"turn":2,
+                         "message":"You successfully solved the mission!"}
+                        """, MediaType.APPLICATION_JSON));
+
+        assertThat(client.solveAd("ggLmesXI", "DSAUBsXa").success()).isTrue();
+        server.verify();
+    }
+
+    @Test
+    void solveAdThrowsQuotaExceededWhenServerKeepsRefusing() {
+        server.expect(times(4), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa"))
+                .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));
+
+        assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa"))
+                .isInstanceOf(GameServerQuotaExceededException.class)
+                .hasMessageContaining("gameId=ggLmesXI");
+        server.verify();
     }
 }

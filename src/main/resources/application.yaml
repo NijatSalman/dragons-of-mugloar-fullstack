@@ -15,6 +15,33 @@ spring.http.clients:
 game-api:
   base-url: https://dragonsofmugloar.com/api/v2
 
+resilience4j:
+  ratelimiter:
+    instances:
+      gameApi:
+        # measured: the game server sustains about 6.5 requests per second per address; 10 per second is refused after a minute
+        limit-for-period: 6
+        limit-refresh-period: 1s
+        timeout-duration: 60s
+  retry:
+    instances:
+      # reads are idempotent: repeat on any server failure; waits 2 s, 6 s, 18 s, 54 s so a quota penalty
+      # (Retry-After up to 60 s) is outlasted
+      gameApiRead:
+        max-attempts: 5
+        wait-duration: 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 3
+        retry-exceptions:
+          - com.company.dragonsofmugloar.exception.GameApiException
+      # writes may already have been applied on a server error, so repeat only a request the server refused;
+      # three waits of 20 s outlast a quota penalty
+      gameApiWrite:
+        max-attempts: 4
+        wait-duration: 20s
+        retry-exceptions:
+          - com.company.dragonsofmugloar.exception.GameServerQuotaExceededException
+
 autoplay:
   recommended-min-chance: 0.55
   recommended-min-turns-left: 2

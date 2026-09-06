@@ -37,10 +37,13 @@ public class AdRecommender {
         return new AdRecommendation(ad, chance, ad.reward() * chance, isRecommended(ad, chance));
     }
 
-    /** Picks the ad to play from a ranked board; empty only for an empty board. */
-    public Optional<AdRecommendation> chooseAd(List<AdRecommendation> board, int lives) {
+    /**
+     * Picks the ad to play from a ranked board; empty only for an empty board. Plays cautiously while a lost life
+     * could not be replaced: when lives are low, or when there is not enough gold for a healing potion.
+     */
+    public Optional<AdRecommendation> chooseAd(List<AdRecommendation> board, int lives, int gold) {
         List<AdRecommendation> recommended = board.stream().filter(AdRecommendation::recommended).toList();
-        Optional<AdRecommendation> choice = isLowOnLives(lives) ? chooseCautiously(recommended) : chooseBoldly(recommended);
+        Optional<AdRecommendation> choice = isVulnerable(lives, gold) ? chooseCautiously(recommended) : chooseBoldly(recommended);
         return choice.or(() -> safestOf(board));
     }
 
@@ -51,8 +54,8 @@ public class AdRecommender {
                 && !REPUTATION_DAMAGING.matcher(ad.message()).find();
     }
 
-    private boolean isLowOnLives(int lives) {
-        return lives <= properties.lowLives();
+    private boolean isVulnerable(int lives, int gold) {
+        return lives <= properties.lowLives() || gold < properties.potionMinGold();
     }
 
     /** Plenty of lives: the most valuable recommended ad. */

@@ -19,13 +19,15 @@ import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
+import com.company.dragonsofmugloar.exception.GameServerQuotaExceededException;
 import java.util.List;
 import java.util.function.Supplier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.resilience.annotation.Retryable;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -35,10 +37,13 @@ import org.springframework.web.client.RestClientResponseException;
 /**
  * {@link GameApiClient} implementation on Spring's {@link RestClient}. Wire DTOs are mapped to domain objects
  * here, encoded ads are decoded here, and HTTP failures become application exceptions, so nothing outside this
- * package knows how the game server speaks. Only idempotent reads are retried; a solve or a purchase is never
- * sent twice because the first attempt may already have been applied.
+ * package knows how the game server speaks. Every call takes a permit from the shared rate limiter, so all
+ * games together stay under the server's quota. Reads are retried on any server failure; writes only when the
+ * server refused the request for quota reasons, because a refused request was never applied. See
+ * {@code resilience4j.*} in application.yaml.
  */
 @Component
+@RateLimiter(name = "gameApi")
 class GameApiRestClient implements GameApiClient {
 
     private static final ParameterizedTypeReference<List<MessagePayload>> MESSAGE_LIST =
@@ -53,6 +58,7 @@ class GameApiRestClient implements GameApiClient {
     }
 
     @Override
+    @Retry(name = "gameApiWrite")
     public Game startGame() {
         StartGamePayload response = sendRequest(null, () -> restClient.post().uri("/game/start")
                 .retrieve().body(StartGamePayload.class));
@@ -61,7 +67,7 @@ class GameApiRestClient implements GameApiClient {
     }
 
     @Override
-    @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
+    @Retry(name = "gameApiRead")
     public List<Ad> getAds(String gameId) {
         List<MessagePayload> messages = sendRequest(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
                 .retrieve().body(MESSAGE_LIST));
@@ -69,6 +75,7 @@ class GameApiRestClient implements GameApiClient {
     }
 
     @Override
+    @Retry(name = "gameApiWrite")
     public SolveResult solveAd(String gameId, String adId) {
         SolvePayload response = sendRequest(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
                 .retrieve()
@@ -84,7 +91,7 @@ class GameApiRestClient implements GameApiClient {
      */
     @Override
     @Cacheable(cacheNames = CacheConfig.SHOP_ITEMS, key = "'catalogue'")
-    @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
+    @Retry(name = "gameApiRead")
     public List<ShopItem> getShopItems(String gameId) {
         List<ShopItemPayload> items = sendRequest(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
                 .retrieve().body(SHOP_LIST));
@@ -92,6 +99,7 @@ class GameApiRestClient implements GameApiClient {
     }
 
     @Override
+    @Retry(name = "gameApiWrite")
     public PurchaseResult buyItem(String gameId, String itemId) {
         BuyPayload response = sendRequest(gameId, () -> restClient.post()
                 .uri("/{gameId}/shop/buy/{itemId}", gameId, itemId)
@@ -101,6 +109,7 @@ class GameApiRestClient implements GameApiClient {
     }
 
     @Override
+    @Retry(name = "gameApiWrite")
     public Reputation investigateReputation(String gameId) {
         ReputationPayload response = sendRequest(gameId, () -> restClient.post()
                 .uri("/{gameId}/investigate/reputation", gameId)
@@ -155,6 +164,7 @@ class GameApiRestClient implements GameApiClient {
         return switch (status) {
             case 404 -> new GameNotFoundException(gameId);
             case 410 -> new GameOverException(gameId);
+            case 429 -> new GameServerQuotaExceededException(gameId);
             default -> new GameApiException("Game server failed: gameId=" + gameId + ", status=" + status);
         };
     }
