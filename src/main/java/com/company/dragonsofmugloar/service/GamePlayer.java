@@ -32,11 +32,19 @@ public class GamePlayer {
     private final PurchasePolicy purchasePolicy;
     private final AutoplayProperties properties;
 
-    /** Starts a new game and plays it to the end, passing the game state to {@code onProgress} after each turn. */
+    /**
+     * Starts a new game and plays it, passing the game state to {@code onProgress} after each turn. Plays until
+     * the game is over or the board no longer offers a recommended ad, which happens in the game's end phase.
+     */
     public Game playNewGame(Consumer<Game> onProgress) {
         Game game = gameService.startGame();
         for (int turn = 1; turn <= properties.maxTurns() && !game.isOver(); turn++) {
-            game = playOneTurn(game.gameId());
+            Optional<AdRecommendation> chosen = chooseBestAd(game.gameId());
+            if (chosen.isEmpty()) {
+                logNoRecommendedAd(game);
+                break;
+            }
+            game = playOneTurn(game.gameId(), chosen.get());
             onProgress.accept(game);
         }
         log.info("Autoplay finished: gameId={}, score={}, turn={}, lives={}",
@@ -44,14 +52,15 @@ public class GamePlayer {
         return game;
     }
 
-    private Game playOneTurn(String gameId) {
-        solveBestAd(gameId);
+    /** Solve the chosen ad, buy what the policy says, return the new state. */
+    private Game playOneTurn(String gameId, AdRecommendation chosen) {
+        solveChosenAd(gameId, chosen);
         buyIfWorthIt(gameId);
         return gameService.getGame(gameId);
     }
 
-    private void solveBestAd(String gameId) {
-        chooseBestAd(gameId).ifPresent(chosen -> solveChosenAd(gameId, chosen));
+    private static void logNoRecommendedAd(Game game) {
+        log.info("Autoplay Game stopped: gameId={}, turn={}, reason=no recommended ad", game.gameId(), game.turn());
     }
 
     private Optional<AdRecommendation> chooseBestAd(String gameId) {
