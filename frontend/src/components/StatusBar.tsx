@@ -2,11 +2,17 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import PaidIcon from '@mui/icons-material/Paid'
 import StarIcon from '@mui/icons-material/Star'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import { Chip, Paper, Stack, Typography } from '@mui/material'
+import LogoutIcon from '@mui/icons-material/Logout'
+import { Button, Chip, Paper, Stack, Typography } from '@mui/material'
 import type { Game } from '../api/types'
 
-/** The numbers a player watches: lives, gold, score, dragon level and turn. */
-export function StatusBar({ game }: { game: Game }) {
+interface StatusBarProps {
+  game: Game
+  onLeave: () => void
+}
+
+/** The numbers a player watches: lives, gold, score, dragon level and turn; and the way out of the game. */
+export function StatusBar({ game, onLeave }: StatusBarProps) {
   return (
     <Paper component="section" aria-label="Game status" sx={{ p: 2 }}>
       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', alignItems: 'center', rowGap: 1 }}>
@@ -18,6 +24,9 @@ export function StatusBar({ game }: { game: Game }) {
         <Typography variant="body2" sx={{ ml: 'auto', color: 'rgba(43,33,24,0.7)' }}>
           Game {game.gameId}
         </Typography>
+        <Button size="small" variant="outlined" color="inherit" startIcon={<LogoutIcon />} onClick={onLeave}>
+          Leave game
+        </Button>
       </Stack>
     </Paper>
   )

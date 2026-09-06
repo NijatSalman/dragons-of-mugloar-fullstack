@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { App } from './App'
 import { ApiError } from './api/http'
 import { finishedGame, quiteLikelyAd, runningGame } from './test/fixtures'
@@ -46,9 +47,21 @@ describe('App', () => {
     expect(screen.getByText('You successfully solved the mission!')).toBeInTheDocument()
   })
 
-  it('showsTheAutoplayPanelWithAndWithoutAGame', () => {
+  it('showsTheAutoplayPanelOnItsTab', async () => {
     renderWithGame(<App />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Autoplay' }))
+
     expect(screen.getByRole('region', { name: 'Autoplay' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
+  })
+
+  it('leaveGameReturnsToTheStartPanel', async () => {
+    const { actions } = renderWithGame(<App />, { game: runningGame })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Leave game' }))
+
+    expect(actions.resetGame).toHaveBeenCalledOnce()
   })
 
   it('showsTheErrorBannerWithTheTraceId', () => {

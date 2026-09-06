@@ -2,6 +2,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import {
   Button,
   Chip,
+  CircularProgress,
   LinearProgress,
   Paper,
   Stack,
@@ -64,7 +65,12 @@ function SessionProgress({ session }: { session: AutoplaySession }) {
   return (
     <Stack spacing={1} sx={{ mt: 2 }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
-        <Chip size="small" color={session.status === 'FINISHED' ? 'success' : 'primary'} label={session.status.toLowerCase()} />
+        <Chip
+          size="small"
+          color={session.status === 'FINISHED' ? 'success' : 'primary'}
+          icon={session.status === 'RUNNING' ? <CircularProgress size={12} color="inherit" /> : undefined}
+          label={session.status === 'RUNNING' ? 'running, updating every 3 s' : 'finished'}
+        />
         <Typography variant="body2">
           {session.finished} of {session.requested} games finished
         </Typography>
@@ -101,7 +107,13 @@ function GameRow({ game }: { game: AutoplayGameProgress }) {
     <TableRow>
       <TableCell>{game.gameId ?? 'starting…'}</TableCell>
       <TableCell>
-        <Chip size="small" color={tone} label={game.status.toLowerCase()} title={game.error} />
+        <Chip
+          size="small"
+          color={tone}
+          icon={game.status === 'RUNNING' ? <CircularProgress size={12} color="inherit" /> : undefined}
+          label={game.status.toLowerCase()}
+          title={game.error}
+        />
       </TableCell>
       <TableCell align="right">{game.score}</TableCell>
       <TableCell align="right">{game.turn}</TableCell>
