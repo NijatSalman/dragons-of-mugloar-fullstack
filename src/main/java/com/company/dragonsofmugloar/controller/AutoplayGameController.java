@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Autoplay", description = "Let the dragon play whole games by itself, several at a time")
 public class AutoplayGameController {
 
-    /** Upper bound per request, to stay polite towards the public game server. */
+    /** Upper bound per request; all games share the client's rate limiter, so more games only means slower games. */
     static final int MAX_GAMES = 20;
     private static final String UUID_PATTERN = "[0-9a-fA-F-]{36}";
 

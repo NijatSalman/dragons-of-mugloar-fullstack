@@ -104,7 +104,7 @@ class AdRecommenderTest {
                 new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
                         Probability.PIECE_OF_CAKE)));
 
-        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3);
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3, 500);
 
         assertThat(choice).map(chosen -> chosen.ad().adId()).contains("8ZvZ9jRs");
     }
@@ -116,7 +116,7 @@ class AdRecommenderTest {
                 new Ad("KdX1gKEs", "Help Funda Cropper to sell an unordinary house on the local market", 34, 7,
                         Probability.PIECE_OF_CAKE)));
 
-        Optional<AdRecommendation> choice = recommender.chooseAd(board, 2);
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 2, 500);
 
         assertThat(choice).map(chosen -> chosen.ad().adId()).contains("KdX1gKEs");
     }
@@ -128,7 +128,7 @@ class AdRecommenderTest {
                 new Ad("Vh8MgCru", "Help Päivä Braddock to transport a magic pot to field in Oldwater", 8, 7,
                         Probability.GAMBLE)));
 
-        Optional<AdRecommendation> choice = recommender.chooseAd(board, 1);
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 1, 500);
 
         assertThat(choice).map(chosen -> chosen.ad().adId()).contains("8ZvZ9jRs");
     }
@@ -139,13 +139,25 @@ class AdRecommenderTest {
                 new Ad("1m9zkK9h", "Create an advertisement campaign for Liron Blackbourne", 35, 7, Probability.SUICIDE_MISSION),
                 new Ad("58rrbJ0D", "Escort Imogene Wild to savannah in Strongchester", 68, 7, Probability.PLAYING_WITH_FIRE)));
 
-        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3);
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3, 500);
 
         assertThat(choice).map(chosen -> chosen.ad().adId()).contains("58rrbJ0D");
     }
 
     @Test
+    void chooseAdPicksOnlySafeAdsWhileAPotionIsUnaffordable() {
+        List<AdRecommendation> board = recommender.recommendAds(List.of(
+                new Ad("qLAvRBYJ", "Help Ken'ichi Trengove to promote their horse based business", 61, 7, Probability.HMMM),
+                new Ad("PxlzxCA6", "Help Funda Cropper to sell an unordinary house on the local market", 22, 7,
+                        Probability.SURE_THING)));
+
+        Optional<AdRecommendation> choice = recommender.chooseAd(board, 3, 40);
+
+        assertThat(choice).map(chosen -> chosen.ad().adId()).contains("PxlzxCA6");
+    }
+
+    @Test
     void chooseAdReturnsEmptyWhenBoardIsEmpty() {
-        assertThat(recommender.chooseAd(List.of(), 3)).isEmpty();
+        assertThat(recommender.chooseAd(List.of(), 3, 500)).isEmpty();
     }
 }
