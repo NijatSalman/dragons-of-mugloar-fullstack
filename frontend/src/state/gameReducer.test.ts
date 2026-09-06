@@ -32,14 +32,24 @@ describe('gameReducer', () => {
     expect(state).toMatchObject({ busy: false, error })
   })
 
-  it('gameStartedReplacesEverythingWithTheNewGame', () => {
+  it('gameStartedReplacesTheGameButKeepsTheAutoplaySession', () => {
     const fresh: Game = { ...game, gameId: '0NVG7E0r', gold: 0, score: 0, turn: 0 }
 
-    const state = gameReducer(playing, { type: 'GAME_STARTED', game: fresh })
+    const session: AutoplaySession = {
+      sessionId: '84e1bfd2-3f61-467d-8fe5-90b9bc358e39',
+      status: 'RUNNING',
+      startedAt: '2026-09-06T14:00:00Z',
+      requested: 3,
+      finished: 0,
+      games: [],
+    }
+
+    const state = gameReducer({ ...playing, session }, { type: 'GAME_STARTED', game: fresh })
 
     expect(state.game).toEqual(fresh)
     expect(state.ads).toEqual([])
     expect(state.shop).toEqual([])
+    expect(state.session).toEqual(session)
   })
 
   it('adsLoadedReplacesTheBoard', () => {

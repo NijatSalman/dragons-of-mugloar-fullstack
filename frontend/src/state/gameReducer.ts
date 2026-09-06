@@ -34,6 +34,7 @@ export type Action =
   | { type: 'ITEM_BOUGHT'; itemId: string; result: PurchaseResult }
   | { type: 'SESSION_STARTED'; session: AutoplaySession }
   | { type: 'SESSION_UPDATED'; session: AutoplaySession }
+  | { type: 'SESSION_FORGOTTEN' }
   | { type: 'GAME_RESET' }
   | { type: 'GAME_EXPIRED' }
 
@@ -48,7 +49,7 @@ export function gameReducer(state: State, action: Action): State {
     case 'NOTICE_DISMISSED':
       return { ...state, notice: undefined }
     case 'GAME_STARTED':
-      return { ...initialState, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
+      return { ...initialState, session: state.session, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
     case 'GAME_LOADED':
       return { ...state, game: action.game, busy: false }
     case 'ADS_LOADED':
@@ -75,6 +76,8 @@ export function gameReducer(state: State, action: Action): State {
       return { ...state, session: action.session, busy: false }
     case 'SESSION_UPDATED': // a background poll: never touches busy, so the board keeps working
       return { ...state, session: action.session }
+    case 'SESSION_FORGOTTEN':
+      return { ...state, session: undefined }
     case 'GAME_RESET':
       return { ...initialState, session: state.session }
     case 'GAME_EXPIRED':
