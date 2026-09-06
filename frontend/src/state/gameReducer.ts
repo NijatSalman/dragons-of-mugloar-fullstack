@@ -1,6 +1,12 @@
 import type { ApiError } from '../api/http'
 import type { Ad, AutoplaySession, Game, PurchaseResult, ShopItem, SolveResult } from '../api/types'
 
+/** A short message about the last turn, shown as a toast. */
+export interface Notice {
+  message: string
+  tone: 'success' | 'warning' | 'info'
+}
+
 /** Everything the UI shows. Immutable: every action produces a new object. */
 export interface State {
   game?: Game
@@ -9,7 +15,7 @@ export interface State {
   session?: AutoplaySession
   busy: boolean
   error?: ApiError
-  notice?: string
+  notice?: Notice
 }
 
 export const initialState: State = { ads: [], shop: [], busy: false }
@@ -19,6 +25,7 @@ export type Action =
   | { type: 'REQUEST_STARTED' }
   | { type: 'REQUEST_FAILED'; error: ApiError }
   | { type: 'ERROR_DISMISSED' }
+  | { type: 'NOTICE_DISMISSED' }
   | { type: 'GAME_STARTED'; game: Game }
   | { type: 'GAME_LOADED'; game: Game }
   | { type: 'ADS_LOADED'; ads: Ad[] }
@@ -36,21 +43,31 @@ export function gameReducer(state: State, action: Action): State {
       return { ...state, busy: false, error: action.error }
     case 'ERROR_DISMISSED':
       return { ...state, error: undefined }
+    case 'NOTICE_DISMISSED':
+      return { ...state, notice: undefined }
     case 'GAME_STARTED':
-      return { ...initialState, game: action.game, notice: 'A new game has started. Good luck!' }
+      return { ...initialState, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
     case 'GAME_LOADED':
       return { ...state, game: action.game, busy: false }
     case 'ADS_LOADED':
       return { ...state, ads: action.ads, busy: false }
     case 'AD_SOLVED':
-      return { ...state, game: afterSolve(state.game, action.result), notice: action.result.message }
+      return {
+        ...state,
+        busy: false,
+        game: afterSolve(state.game, action.result),
+        notice: { message: action.result.message, tone: action.result.success ? 'success' : 'warning' },
+      }
     case 'SHOP_LOADED':
       return { ...state, shop: action.shop, busy: false }
     case 'ITEM_BOUGHT':
       return {
         ...state,
+        busy: false,
         game: afterPurchase(state.game, action.result),
-        notice: action.result.success ? `Bought ${action.itemId}.` : `Could not buy ${action.itemId}.`,
+        notice: action.result.success
+          ? { message: `Bought ${action.itemId}.`, tone: 'success' }
+          : { message: `Could not buy ${action.itemId}: not enough gold.`, tone: 'warning' },
       }
     case 'SESSION_UPDATED':
       return { ...state, session: action.session, busy: false }

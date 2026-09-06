@@ -1,6 +1,9 @@
 import { AppBar, Box, Container, Stack, Toolbar, Typography } from '@mui/material'
+import { AdBoard } from './components/AdBoard'
 import { DragonMark } from './components/DragonMark'
 import { ErrorBanner } from './components/ErrorBanner'
+import { GameOverBanner } from './components/GameOverBanner'
+import { NoticeBar } from './components/NoticeBar'
 import { StartPanel } from './components/StartPanel'
 import { StatusBar } from './components/StatusBar'
 import { useGame } from './state/useGame'
@@ -22,9 +25,15 @@ export function App() {
       <Container component="main" maxWidth="lg" sx={{ flex: 1, py: 3 }}>
         <Stack spacing={2}>
           {state.error && <ErrorBanner error={state.error} onDismiss={actions.dismissError} />}
-          {state.game ? <StatusBar game={state.game} /> : <StartPanel />}
+          {!state.game && <StartPanel />}
+          {state.game && <StatusBar game={state.game} />}
+          {state.game?.over && <GameOverBanner game={state.game} onStartAgain={actions.resetGame} />}
+          {state.game && !state.game.over && (
+            <AdBoard ads={state.ads} disabled={state.busy} onSolve={(adId) => void actions.solveAd(adId)} onRefresh={() => void actions.refreshAds()} />
+          )}
         </Stack>
       </Container>
+      {state.notice && <NoticeBar notice={state.notice} onDismiss={actions.dismissNotice} />}
       <Box component="footer" sx={{ py: 2, textAlign: 'center', color: 'text.secondary', borderTop: '1px solid rgba(212,165,58,0.25)' }}>
         <Typography variant="body2">Every dragon needs an errand. Choose wisely.</Typography>
       </Box>

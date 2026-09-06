@@ -56,7 +56,16 @@ describe('gameReducer', () => {
     })
 
     expect(state.game).toMatchObject({ lives: 3, gold: 141, score: 321, turn: 16, level: 1, over: false })
-    expect(state.notice).toBe('You successfully solved the mission!')
+    expect(state.notice).toEqual({ message: 'You successfully solved the mission!', tone: 'success' })
+  })
+
+  it('adSolvedWarnsWhenTheMissionFailed', () => {
+    const state = gameReducer(playing, {
+      type: 'AD_SOLVED',
+      result: { success: false, lives: 2, gold: 120, score: 300, highScore: 300, turn: 16, message: 'You failed on the mission!' },
+    })
+
+    expect(state.notice).toEqual({ message: 'You failed on the mission!', tone: 'warning' })
   })
 
   it('adSolvedMarksTheGameOverWhenTheLastLifeIsLost', () => {
@@ -76,7 +85,7 @@ describe('gameReducer', () => {
     })
 
     expect(state.game).toMatchObject({ gold: 20, level: 2, turn: 16, score: 300 })
-    expect(state.notice).toBe('Bought cs.')
+    expect(state.notice).toEqual({ message: 'Bought cs.', tone: 'success' })
   })
 
   it('sessionUpdatedStoresTheAutoplaySession', () => {

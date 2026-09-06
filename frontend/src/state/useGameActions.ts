@@ -49,8 +49,9 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
       solveAd: (adId: string) =>
         run(async () => {
           const id = requireGame()
-          dispatch({ type: 'AD_SOLVED', result: await gameApi.solveAd(id, adId) })
-          await refreshAds(id)
+          const result = await gameApi.solveAd(id, adId)
+          dispatch({ type: 'AD_SOLVED', result })
+          if (result.lives > 0) await refreshAds(id) // a finished game has no board any more
         }),
 
       loadShop: () =>
@@ -81,6 +82,8 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
       },
 
       dismissError: () => dispatch({ type: 'ERROR_DISMISSED' }),
+
+      dismissNotice: () => dispatch({ type: 'NOTICE_DISMISSED' }),
     }
   }, [dispatch, gameId])
 }

@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react'
 import { App } from './App'
 import { ApiError } from './api/http'
+import { finishedGame, quiteLikelyAd, runningGame } from './test/fixtures'
 import { renderWithGame } from './test/renderWithGame'
 
 describe('App', () => {
@@ -11,13 +12,25 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Start new game' })).toBeInTheDocument()
   })
 
-  it('showsTheStatusBarWhenAGameIsRunning', () => {
-    renderWithGame(<App />, {
-      game: { gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false },
-    })
+  it('showsStatusBarAndAdBoardWhenAGameIsRunning', () => {
+    renderWithGame(<App />, { game: runningGame, ads: [quiteLikelyAd] })
 
     expect(screen.getByText('3 lives')).toBeInTheDocument()
+    expect(screen.getByText(quiteLikelyAd.message)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
+  })
+
+  it('showsGameOverInsteadOfTheBoardWhenLivesAreGone', () => {
+    renderWithGame(<App />, { game: finishedGame, ads: [quiteLikelyAd] })
+
+    expect(screen.getByRole('heading', { name: 'Game over' })).toBeInTheDocument()
+    expect(screen.queryByText(quiteLikelyAd.message)).not.toBeInTheDocument()
+  })
+
+  it('showsTheServersNoticeAfterATurn', () => {
+    renderWithGame(<App />, { game: runningGame, notice: { message: 'You successfully solved the mission!', tone: 'success' } })
+
+    expect(screen.getByText('You successfully solved the mission!')).toBeInTheDocument()
   })
 
   it('showsTheErrorBannerWithTheTraceId', () => {
