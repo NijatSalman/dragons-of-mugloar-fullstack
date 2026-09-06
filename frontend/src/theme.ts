@@ -100,7 +100,34 @@ export const theme = createTheme({
     },
     MuiAlert: {
       styleOverrides: {
-        root: { color: colors.ink },
+        standard: { color: colors.ink },
+        filled: { color: colors.night, fontWeight: 600 },
+      },
+    },
+    // Form controls also sit on parchment cards.
+    MuiInputBase: {
+      styleOverrides: {
+        root: { color: colors.ink, fontFamily: '"Crimson Pro", Georgia, serif', fontWeight: 600 },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        notchedOutline: { borderColor: 'rgba(43,33,24,0.45)' },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        icon: { color: colors.ink },
+      },
+    },
+    MuiFormControlLabel: {
+      styleOverrides: {
+        label: { color: colors.ink, fontWeight: 600 },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: { backgroundImage: 'none', backgroundColor: colors.parchment },
       },
     },
   },

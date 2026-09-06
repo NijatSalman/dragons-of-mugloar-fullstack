@@ -17,6 +17,7 @@ export function renderWithGame(ui: ReactNode, state: Partial<State> = {}) {
     refreshAutoplay: vi.fn(),
     resetGame: vi.fn(),
     dismissError: vi.fn(),
+    dismissNotice: vi.fn(),
   } as unknown as GameActions
   const value: GameContextValue = { state: { ...initialState, ...state }, actions }
   return { ...render(<GameContext.Provider value={value}>{ui}</GameContext.Provider>), actions }

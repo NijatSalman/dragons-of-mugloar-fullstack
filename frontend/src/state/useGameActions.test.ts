@@ -37,6 +37,7 @@ describe('useGameActions', () => {
 
   beforeEach(() => {
     dispatch.mockReset()
+    api.getRecommendedAds.mockReset()
     localStorage.clear()
   })
 
@@ -65,6 +66,15 @@ describe('useGameActions', () => {
     expect(api.solveAd).toHaveBeenCalledWith('ggLmesXI', 'DSAUBsXa')
     expect(dispatch).toHaveBeenCalledWith({ type: 'AD_SOLVED', result })
     expect(dispatch).toHaveBeenLastCalledWith({ type: 'ADS_LOADED', ads: [] })
+  })
+
+  it('solveAdDoesNotRefreshTheBoardWhenTheGameIsOver', async () => {
+    api.solveAd.mockResolvedValue({ success: false, lives: 0, gold: 40, score: 40, highScore: 40, turn: 5, message: 'You failed on the mission!' })
+
+    await actionsFor('ggLmesXI').solveAd('DSAUBsXa')
+
+    expect(api.getRecommendedAds).not.toHaveBeenCalled()
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'AD_SOLVED', result: expect.objectContaining({ lives: 0 }) })
   })
 
   it('solveAdDispatchesTheApiErrorWhenTheBackendRejects', async () => {
