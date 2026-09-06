@@ -1,14 +1,22 @@
-/** Page shell: title, the play area (added in the next tickets) and a footer. */
+import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material'
+
+/** Page shell: title bar, the play area (added in the next tickets) and a footer. */
 export function App() {
   return (
-    <div className="app">
-      <header className="app__header">
-        <h1 className="app__title">Dragons of Mugloar</h1>
-      </header>
-      <main className="app__main">
-        <p>Start a game, pick the ads your dragon should solve, and buy items in the shop.</p>
-      </main>
-      <footer className="app__footer">A take-home assignment for the Dragons of Mugloar game.</footer>
-    </div>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static" component="header">
+        <Toolbar>
+          <Typography variant="h1" component="h1">
+            Dragons of Mugloar
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container component="main" maxWidth="lg" sx={{ flex: 1, py: 3 }}>
+        <Typography>Start a game, pick the ads your dragon should solve, and buy items in the shop.</Typography>
+      </Container>
+      <Box component="footer" sx={{ py: 2, textAlign: 'center', color: 'text.secondary' }}>
+        <Typography variant="body2">A take-home assignment for the Dragons of Mugloar game.</Typography>
+      </Box>
+    </Box>
   )
 }
