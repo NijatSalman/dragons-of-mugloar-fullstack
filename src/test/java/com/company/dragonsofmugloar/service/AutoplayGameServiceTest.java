@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSession;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameProgress;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameStatus;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSessionStatus;
@@ -42,7 +43,7 @@ class AutoplayGameServiceTest {
 
     @Test
     void startGamesPlaysEveryRequestedGameAndRecordsProgress() {
-        when(gamePlayer.playNewGame(any())).thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41));
+        when(gamePlayer.playNewGame(any())).thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL));
         AutoplayGameService service = new AutoplayGameService(gamePlayer, repository, sameThread,
                 Clock.fixed(NOW, ZoneOffset.UTC));
 
@@ -64,7 +65,7 @@ class AutoplayGameServiceTest {
     void startGamesRecordsAFailedGameWithoutStoppingTheOthers() {
         when(gamePlayer.playNewGame(any()))
                 .thenThrow(new GameApiException("Game server failed: gameId=null, status=503"))
-                .thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41));
+                .thenReturn(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL));
         AutoplayGameService service = new AutoplayGameService(gamePlayer, repository, sameThread, Clock.systemUTC());
 
         AutoplayGameSession started = service.startGames(2);

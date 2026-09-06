@@ -8,11 +8,11 @@ class GameTest {
 
     @Test
     void isOverReturnsTrueWhenNoLivesRemain() {
-        assertThat(new Game("ggLmesXI", 0, 87, 3, 1462, 1462, 41).isOver()).isTrue();
+        assertThat(new Game("ggLmesXI", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL).isOver()).isTrue();
     }
 
     @Test
     void isOverReturnsFalseWhileLivesRemain() {
-        assertThat(new Game("ggLmesXI", 1, 87, 3, 1462, 1462, 41).isOver()).isFalse();
+        assertThat(new Game("ggLmesXI", 1, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL).isOver()).isFalse();
     }
 }

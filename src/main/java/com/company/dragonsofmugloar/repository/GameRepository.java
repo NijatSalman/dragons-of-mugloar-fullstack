@@ -1,6 +1,8 @@
 package com.company.dragonsofmugloar.repository;
 
 import com.company.dragonsofmugloar.domain.game.Game;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,5 +20,10 @@ public class GameRepository {
 
     public Optional<Game> findById(String gameId) {
         return Optional.ofNullable(games.get(gameId));
+    }
+
+    /** Every game this instance has seen, highest score first. */
+    public List<Game> findAllByScoreDesc() {
+        return games.values().stream().sorted(Comparator.comparingInt(Game::score).reversed()).toList();
     }
 }

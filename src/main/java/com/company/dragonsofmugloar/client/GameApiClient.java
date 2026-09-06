@@ -2,6 +2,7 @@ package com.company.dragonsofmugloar.client;
 
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.game.Reputation;
 import com.company.dragonsofmugloar.domain.shop.ShopItem;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public interface GameApiClient {
 
-    Game startGame();
+    Game startGame(GameOrigin origin);
 
     List<Ad> getAds(String gameId);
 

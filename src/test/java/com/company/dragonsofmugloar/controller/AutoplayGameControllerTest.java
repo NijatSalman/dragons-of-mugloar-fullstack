@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSession;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameProgress;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameStatus;
 import com.company.dragonsofmugloar.exception.AutoplayGameSessionNotFoundException;
@@ -62,8 +63,8 @@ class AutoplayGameControllerTest {
     @Test
     void getGamesProgressReturnsEachGameAndTheScoreSummary() throws Exception {
         AutoplayGameSession session = AutoplayGameSession.create(SESSION_ID, 2, STARTED)
-                .withGame(0, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41), AutoplayGameStatus.FINISHED))
-                .withGame(1, AutoplayGameProgress.fromGame(new Game("NmLbq66u", 2, 40, 1, 380, 380, 12), AutoplayGameStatus.RUNNING));
+                .withGame(0, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL), AutoplayGameStatus.FINISHED))
+                .withGame(1, AutoplayGameProgress.fromGame(new Game("NmLbq66u", 2, 40, 1, 380, 380, 12, GameOrigin.MANUAL), AutoplayGameStatus.RUNNING));
         when(autoplayGameService.getGamesProgress(SESSION_ID)).thenReturn(session);
 
         mvc.perform(get(SESSIONS_URL + "/" + SESSION_ID))
@@ -73,6 +74,8 @@ class AutoplayGameControllerTest {
                 .andExpect(jsonPath("$.games[0].gameId").value("0NVG7E0r"))
                 .andExpect(jsonPath("$.games[0].status").value("FINISHED"))
                 .andExpect(jsonPath("$.games[0].score").value(1462))
+                .andExpect(jsonPath("$.games[0].gold").value(87))
+                .andExpect(jsonPath("$.games[0].level").value(3))
                 .andExpect(jsonPath("$.games[1].status").value("RUNNING"))
                 .andExpect(jsonPath("$.summary.min").value(1462))
                 .andExpect(jsonPath("$.summary.max").value(1462));

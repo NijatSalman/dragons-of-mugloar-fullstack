@@ -2,8 +2,10 @@ package com.company.dragonsofmugloar.controller;
 
 import com.company.dragonsofmugloar.controller.dto.AdResponse;
 import com.company.dragonsofmugloar.controller.dto.GameResponse;
+import com.company.dragonsofmugloar.controller.dto.GameSummaryResponse;
 import com.company.dragonsofmugloar.controller.dto.ReputationResponse;
 import com.company.dragonsofmugloar.controller.dto.SolveResultResponse;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.service.AdService;
 import com.company.dragonsofmugloar.service.GameService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +39,13 @@ public class GameController {
     @ApiResponse(responseCode = "201", description = "Game started")
     @ResponseStatus(HttpStatus.CREATED)
     public GameResponse startGame() {
-        return GameResponse.from(gameService.startGame());
+        return GameResponse.from(gameService.startGame(GameOrigin.MANUAL));
+    }
+
+    @GetMapping
+    @Operation(summary = "Every game this instance has seen, manual and autoplay, highest score first")
+    public List<GameSummaryResponse> listGames() {
+        return gameService.listGamesByScore().stream().map(GameSummaryResponse::from).toList();
     }
 
     @GetMapping("/{gameId}")

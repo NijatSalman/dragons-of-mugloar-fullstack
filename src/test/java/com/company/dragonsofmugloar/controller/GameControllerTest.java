@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.Reputation;
 import com.company.dragonsofmugloar.domain.game.SolveResult;
@@ -43,7 +44,7 @@ class GameControllerTest {
 
     @Test
     void startGameReturns201WithTheNewGame() throws Exception {
-        when(gameService.startGame()).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0));
+        when(gameService.startGame(GameOrigin.MANUAL)).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0, GameOrigin.MANUAL));
 
         mvc.perform(post(GAMES_URL))
                 .andExpect(status().isCreated())
@@ -53,8 +54,26 @@ class GameControllerTest {
     }
 
     @Test
+    void listGamesReturnsTheLeaderboardHighestScoreFirst() throws Exception {
+        when(gameService.listGamesByScore()).thenReturn(List.of(
+                new Game("jz21oOWI", 0, 12, 4, 5239, 5239, 201, GameOrigin.AUTOPLAY),
+                new Game(GAME_ID, 2, 120, 1, 300, 300, 15, GameOrigin.MANUAL)));
+
+        mvc.perform(get(GAMES_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].gameId").value("jz21oOWI"))
+                .andExpect(jsonPath("$[0].origin").value("AUTOPLAY"))
+                .andExpect(jsonPath("$[0].score").value(5239))
+                .andExpect(jsonPath("$[0].gold").value(12))
+                .andExpect(jsonPath("$[0].level").value(4))
+                .andExpect(jsonPath("$[0].over").value(true))
+                .andExpect(jsonPath("$[1].origin").value("MANUAL"));
+    }
+
+    @Test
     void getGameReturnsTheStoredState() throws Exception {
-        when(gameService.getGame(GAME_ID)).thenReturn(new Game(GAME_ID, 0, 87, 3, 1462, 1462, 41));
+        when(gameService.getGame(GAME_ID)).thenReturn(new Game(GAME_ID, 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL));
 
         mvc.perform(get(GAMES_URL + "/" + GAME_ID))
                 .andExpect(status().isOk())

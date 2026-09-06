@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSession;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameProgress;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameStatus;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSessionStatus;
@@ -20,7 +21,7 @@ class AutoplayRunRepositoryTest {
     void updateReplacesOneGameOfTheSession() {
         repository.save(AutoplayGameSession.create(SESSION_ID, 2, Instant.parse("2026-09-05T14:00:00Z")));
 
-        repository.update(SESSION_ID, session -> session.withGame(1, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41), AutoplayGameStatus.FINISHED)));
+        repository.update(SESSION_ID, session -> session.withGame(1, AutoplayGameProgress.fromGame(new Game("0NVG7E0r", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL), AutoplayGameStatus.FINISHED)));
 
         AutoplayGameSession session = repository.findById(SESSION_ID).orElseThrow();
         assertThat(session.games().get(0).status()).isEqualTo(AutoplayGameStatus.RUNNING);

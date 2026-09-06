@@ -3,6 +3,7 @@ package com.company.dragonsofmugloar.service;
 import com.company.dragonsofmugloar.config.AutoplayProperties;
 import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.service.strategy.AdRecommender;
 import com.company.dragonsofmugloar.service.strategy.PurchasePolicy;
@@ -37,7 +38,7 @@ public class GamePlayer {
      * {@code onProgress} after each turn. The turn cap only guards against a server that never ends the game.
      */
     public Game playNewGame(Consumer<Game> onProgress) {
-        Game game = gameService.startGame();
+        Game game = gameService.startGame(GameOrigin.AUTOPLAY);
         String gameId = game.gameId();
         for (int turn = 1; turn <= properties.maxTurns() && !game.isOver(); turn++) {
             AdRecommendation chosen = chooseBestAd(gameId)

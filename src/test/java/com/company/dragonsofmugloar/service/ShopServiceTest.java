@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.company.dragonsofmugloar.client.GameApiClient;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.shop.ShopItem;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
@@ -40,7 +41,7 @@ class ShopServiceTest {
 
     @Test
     void getShopItemsReturnsTheCatalogueForAKnownGame() {
-        gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15));
+        gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15, GameOrigin.MANUAL));
         List<ShopItem> items = List.of(new ShopItem("hpot", "Healing potion", 50),
                 new ShopItem("cs", "Claw Sharpening", 100));
         when(gameApiClient.getShopItems(GAME_ID)).thenReturn(items);
@@ -56,18 +57,18 @@ class ShopServiceTest {
 
     @Test
     void buyItemUpdatesGoldLevelAndTurnButKeepsTheScore() {
-        gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15));
+        gameRepository.save(new Game(GAME_ID, 3, 120, 0, 300, 300, 15, GameOrigin.MANUAL));
         when(gameApiClient.buyItem(GAME_ID, "cs")).thenReturn(new PurchaseResult(true, 20, 3, 1, 16));
 
         PurchaseResult result = service.buyItem(GAME_ID, "cs");
 
         assertThat(result.success()).isTrue();
-        assertThat(gameRepository.findById(GAME_ID)).contains(new Game(GAME_ID, 3, 20, 1, 300, 300, 16));
+        assertThat(gameRepository.findById(GAME_ID)).contains(new Game(GAME_ID, 3, 20, 1, 300, 300, 16, GameOrigin.MANUAL));
     }
 
     @Test
     void buyItemAdvancesTheTurnWhenPurchaseFails() {
-        gameRepository.save(new Game(GAME_ID, 3, 4, 0, 4, 4, 2));
+        gameRepository.save(new Game(GAME_ID, 3, 4, 0, 4, 4, 2, GameOrigin.MANUAL));
         when(gameApiClient.buyItem(GAME_ID, "hpot")).thenReturn(new PurchaseResult(false, 4, 3, 0, 3));
 
         service.buyItem(GAME_ID, "hpot");

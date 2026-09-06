@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +36,8 @@ class GameMetricsTest {
 
     @Test
     void recordFinalScoreRecordsEveryFinishedGame() {
-        metrics.recordFinalScore(new Game("jz21oOWI", 0, 87, 3, 5239, 5239, 201));
-        metrics.recordFinalScore(new Game("8ZW2dZlT", 0, 12, 4, 6159, 6159, 248));
+        metrics.recordFinalScore(new Game("jz21oOWI", 0, 87, 3, 5239, 5239, 201, GameOrigin.MANUAL));
+        metrics.recordFinalScore(new Game("8ZW2dZlT", 0, 12, 4, 6159, 6159, 248, GameOrigin.MANUAL));
 
         var summary = registry.get(GameMetrics.GAME_SCORE).summary();
         assertThat(summary.count()).isEqualTo(2);

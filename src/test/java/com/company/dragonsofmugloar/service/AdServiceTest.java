@@ -11,6 +11,7 @@ import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.game.SolveResult;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.observability.GameMetrics;
@@ -29,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AdServiceTest {
 
     private static final String GAME_ID = "ggLmesXI";
-    private static final Game NEW_GAME = new Game(GAME_ID, 3, 0, 0, 0, 0, 0);
+    private static final Game NEW_GAME = new Game(GAME_ID, 3, 0, 0, 0, 0, 0, GameOrigin.MANUAL);
 
     @Mock
     private GameApiClient gameApiClient;
@@ -76,12 +77,12 @@ class AdServiceTest {
         when(gameApiClient.solveAd(GAME_ID, "DSAUBsXa")).thenReturn(result);
 
         assertThat(service.solveAd(GAME_ID, "DSAUBsXa")).isEqualTo(result);
-        assertThat(gameRepository.findById(GAME_ID)).contains(new Game(GAME_ID, 3, 21, 0, 21, 0, 2));
+        assertThat(gameRepository.findById(GAME_ID)).contains(new Game(GAME_ID, 3, 21, 0, 21, 0, 2, GameOrigin.MANUAL));
     }
 
     @Test
     void solveAdMarksTheGameOverWhenLastLifeIsLost() {
-        gameRepository.save(new Game(GAME_ID, 1, 116, 0, 116, 116, 6));
+        gameRepository.save(new Game(GAME_ID, 1, 116, 0, 116, 116, 6, GameOrigin.MANUAL));
         when(gameApiClient.solveAd(GAME_ID, "mkONU4UV"))
                 .thenReturn(new SolveResult(false, 0, 116, 116, 116, 7, "You failed to solve the mission."));
 

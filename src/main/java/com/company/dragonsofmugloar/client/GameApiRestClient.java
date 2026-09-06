@@ -10,6 +10,7 @@ import com.company.dragonsofmugloar.config.CacheConfig;
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.game.Reputation;
@@ -59,11 +60,11 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     @Retry(name = "gameApiWrite")
-    public Game startGame() {
+    public Game startGame(GameOrigin origin) {
         StartGamePayload response = sendRequest(null, () -> restClient.post().uri("/game/start")
                 .retrieve().body(StartGamePayload.class));
         return new Game(response.gameId(), response.lives(), response.gold(), response.level(), response.score(),
-                response.highScore(), response.turn());
+                response.highScore(), response.turn(), origin);
     }
 
     @Override
