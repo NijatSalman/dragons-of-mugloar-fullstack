@@ -22,32 +22,40 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(GameNotFoundException.class)
     ProblemDetail handleGameNotFound(GameNotFoundException exception) {
         log.debug("Game not found: gameId={}", exception.getGameId());
-        return problem(HttpStatus.NOT_FOUND, exception.getMessage());
+        return problemDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(AutoplayGameSessionNotFoundException.class)
+    ProblemDetail handleRunNotFound(AutoplayGameSessionNotFoundException exception) {
+        log.debug("Autoplay session not found: sessionId={}", exception.getSessionId());
+        return problemDetail(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(GameOverException.class)
     ProblemDetail handleGameOver(GameOverException exception) {
         log.info("Game over: gameId={}", exception.getGameId());
-        return problem(HttpStatus.GONE, exception.getMessage());
+        return problemDetail(HttpStatus.GONE, exception.getMessage());
+    }
+
+    @ExceptionHandler(AdNotAvailableException.class)
+    ProblemDetail handleAdNotAvailable(AdNotAvailableException exception) {
+        log.info("Ad not available: gameId={}, adId={}", exception.getGameId(), exception.getAdId());
+        return problemDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(GameApiException.class)
     ProblemDetail handleGameApi(GameApiException exception) {
-        if (exception.getReason() == GameApiException.Reason.REJECTED) {
-            log.warn("Game server rejected request: reason={}", exception.getMessage());
-            return problem(HttpStatus.CONFLICT, exception.getMessage());
-        }
         log.warn("Game server unavailable: reason={}", exception.getMessage());
-        return problem(HttpStatus.BAD_GATEWAY, "Game server is currently unavailable");
+        return problemDetail(HttpStatus.BAD_GATEWAY, "Game server is currently unavailable");
     }
 
     @ExceptionHandler(Exception.class)
     ProblemDetail handleUnexpected(Exception exception) {
         log.error("Unexpected error", exception);
-        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error");
+        return problemDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error");
     }
 
-    private static ProblemDetail problem(HttpStatus status, String detail) {
+    private static ProblemDetail problemDetail(HttpStatus status, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(status.getReasonPhrase());
         String traceId = MDC.get(TRACE_ID);

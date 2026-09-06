@@ -15,6 +15,19 @@ spring.http.clients:
 game-api:
   base-url: https://dragonsofmugloar.com/api/v2
 
+autoplay:
+  recommended-min-chance: 0.55
+  recommended-min-turns-left: 2
+  low-lives: 2
+  safe-chance: 0.8
+  potion-item: hpot
+  potion-min-gold: 50
+  cheap-upgrade-min-gold: 150
+  cheap-upgrades: [cs, gas, wax, tricks, wingpot]
+  expensive-upgrade-min-gold: 350
+  expensive-upgrades: [ch, rf, iron, mtrix, wingpotmax]
+  max-turns: 500
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
