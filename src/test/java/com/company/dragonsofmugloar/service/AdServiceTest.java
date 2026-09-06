@@ -13,8 +13,11 @@ import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.Game;
 import com.company.dragonsofmugloar.domain.game.SolveResult;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
+import com.company.dragonsofmugloar.observability.GameMetrics;
+import com.company.dragonsofmugloar.repository.BoardRepository;
 import com.company.dragonsofmugloar.repository.GameRepository;
 import com.company.dragonsofmugloar.service.strategy.AdRecommender;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,13 +35,15 @@ class AdServiceTest {
     private GameApiClient gameApiClient;
 
     private final GameRepository gameRepository = new GameRepository();
+    private final BoardRepository boardRepository = new BoardRepository();
 
     private AdService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdService(gameApiClient, gameRepository, new GameService(gameApiClient, gameRepository),
-                new AdRecommender(TestProperties.autoplay()));
+        service = new AdService(gameApiClient, gameRepository, boardRepository,
+                new GameService(gameApiClient, gameRepository), new AdRecommender(TestProperties.autoplay()),
+                new GameMetrics(new SimpleMeterRegistry()));
     }
 
     @Test
