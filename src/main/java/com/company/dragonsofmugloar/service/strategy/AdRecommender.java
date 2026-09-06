@@ -38,12 +38,14 @@ public class AdRecommender {
     }
 
     /**
-     * Picks the ad to play from a ranked board; empty when no ad on it is recommended. Plays cautiously while a
-     * lost life could not be replaced: when lives are low, or when there is not enough gold for a healing potion.
+     * Picks the ad to play from a ranked board; empty only for an empty board. Plays cautiously while a lost life
+     * could not be replaced: when lives are low, or when there is not enough gold for a healing potion. When no ad
+     * is recommended at all, takes the safest one, because the game only ends when the lives run out.
      */
     public Optional<AdRecommendation> chooseAd(List<AdRecommendation> board, int lives, int gold) {
         List<AdRecommendation> recommended = board.stream().filter(AdRecommendation::recommended).toList();
-        return isVulnerable(lives, gold) ? chooseCautiously(recommended) : chooseBoldly(recommended);
+        Optional<AdRecommendation> choice = isVulnerable(lives, gold) ? chooseCautiously(recommended) : chooseBoldly(recommended);
+        return choice.or(() -> safestOf(board));
     }
 
     /** An ad is recommended when the odds are good enough, it will still be there, and it is honest work. */
@@ -67,6 +69,10 @@ public class AdRecommender {
         return recommended.stream()
                 .filter(candidate -> candidate.successChance() >= properties.safeChance())
                 .findFirst()
-                .or(() -> recommended.stream().max(BY_CHANCE));
+                .or(() -> safestOf(recommended));
+    }
+
+    private static Optional<AdRecommendation> safestOf(List<AdRecommendation> ads) {
+        return ads.stream().max(BY_CHANCE);
     }
 }

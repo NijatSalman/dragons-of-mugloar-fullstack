@@ -134,12 +134,13 @@ class AdRecommenderTest {
     }
 
     @Test
-    void chooseAdReturnsEmptyWhenNothingIsRecommended() {
+    void chooseAdPicksTheSafestAdWhenNothingIsRecommended() {
         List<AdRecommendation> board = recommender.recommendAds(List.of(
-                new Ad("NAiJlGN2", "Help defending palace in Loweburg from the intruders", 132, 7, Probability.IMPOSSIBLE),
-                new Ad("58rrbJ0D", "Help defending bog in Ferndinny from the intruders", 103, 7, Probability.IMPOSSIBLE)));
+                new Ad("1m9zkK9h", "Steal chicken from Lola Bircann", 94, 5, Probability.SUICIDE_MISSION),
+                new Ad("58rrbJ0D", "Steal pan delivery to Beauregard Holmwood and share some of the profits", 91, 6,
+                        Probability.SURE_THING)));
 
-        assertThat(recommender.chooseAd(board, 3, 500)).isEmpty();
+        assertThat(recommender.chooseAd(board, 3, 500)).map(chosen -> chosen.ad().adId()).contains("58rrbJ0D");
     }
 
     @Test
