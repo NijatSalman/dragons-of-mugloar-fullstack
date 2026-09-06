@@ -52,9 +52,17 @@ describe('AdBoard', () => {
     expect(onSolve).toHaveBeenCalledWith('DSAUBsXa')
   })
 
-  it('showsAMessageWhenTheBoardIsEmpty', () => {
+  it('explainsAnEmptyBoard', () => {
     render(<AdBoard ads={[]} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
-    expect(screen.getByText('No ads to show.')).toBeInTheDocument()
+    expect(screen.getByText(/board is empty/)).toBeInTheDocument()
+  })
+
+  it('explainsWhenTheFilterHidesEveryAd', async () => {
+    render(<AdBoard ads={[playingWithFireAd]} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText('Recommended only'))
+
+    expect(screen.getByText(/None of the current ads is recommended/)).toBeInTheDocument()
   })
 })

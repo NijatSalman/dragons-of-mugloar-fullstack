@@ -4,6 +4,7 @@ import { ApiError } from '../api/http'
 import type { Action } from './gameReducer'
 
 const GAME_ID_KEY = 'dragons.gameId'
+const SESSION_ID_KEY = 'dragons.sessionId'
 
 /**
  * The use cases of the UI. Each one calls the backend, then tells the reducer what happened.
@@ -79,15 +80,26 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
 
       startAutoplay: (games: number) =>
         run(async () => {
-          dispatch({ type: 'SESSION_STARTED', session: await gameApi.startAutoplay(games) })
+          const session = await gameApi.startAutoplay(games)
+          localStorage.setItem(SESSION_ID_KEY, session.sessionId)
+          dispatch({ type: 'SESSION_STARTED', session })
         }),
 
-      /** Called by the polling hook; runs in the background, so it does not mark the UI busy. */
+      /**
+       * Called by the polling hook and after a reload; runs in the background, so it does not mark the UI busy.
+       * A session the backend no longer knows (it was restarted) is forgotten without an error.
+       */
       refreshAutoplay: async (sessionId: string) => {
         try {
           dispatch({ type: 'SESSION_UPDATED', session: await gameApi.getAutoplayProgress(sessionId) })
         } catch (failure) {
-          dispatch({ type: 'REQUEST_FAILED', error: toApiError(failure) })
+          const error = toApiError(failure)
+          if (error.status === 404) {
+            localStorage.removeItem(SESSION_ID_KEY)
+            dispatch({ type: 'SESSION_FORGOTTEN' })
+          } else {
+            dispatch({ type: 'REQUEST_FAILED', error })
+          }
         }
       },
 
@@ -108,6 +120,11 @@ export type GameActions = ReturnType<typeof useGameActions>
 /** The game id remembered across page reloads, if any. */
 export function rememberedGameId(): string | undefined {
   return localStorage.getItem(GAME_ID_KEY) ?? undefined
+}
+
+/** The autoplay session id remembered across page reloads, if any. */
+export function rememberedSessionId(): string | undefined {
+  return localStorage.getItem(SESSION_ID_KEY) ?? undefined
 }
 
 function toApiError(failure: unknown): ApiError {

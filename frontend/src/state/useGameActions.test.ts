@@ -114,6 +114,7 @@ describe('useGameActions', () => {
     await actionsFor().startAutoplay(3)
 
     expect(api.startAutoplay).toHaveBeenCalledWith(3)
+    expect(localStorage.getItem('dragons.sessionId')).toBe('84e1bfd2-3f61-467d-8fe5-90b9bc358e39')
     expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['REQUEST_STARTED', 'SESSION_STARTED'])
   })
 
@@ -125,6 +126,16 @@ describe('useGameActions', () => {
 
     expect(dispatch).toHaveBeenCalledTimes(1)
     expect(dispatch).toHaveBeenCalledWith({ type: 'SESSION_UPDATED', session })
+  })
+
+  it('refreshAutoplayForgetsASessionTheBackendNoLongerKnows', async () => {
+    localStorage.setItem('dragons.sessionId', '84e1bfd2-3f61-467d-8fe5-90b9bc358e39')
+    api.getAutoplayProgress.mockRejectedValue(new ApiError(404, 'Not Found', 'Autoplay session not found'))
+
+    await actionsFor().refreshAutoplay('84e1bfd2-3f61-467d-8fe5-90b9bc358e39')
+
+    expect(localStorage.getItem('dragons.sessionId')).toBeNull()
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'SESSION_FORGOTTEN' })
   })
 
   it('resumeGameLoadsTheGameAndItsBoard', async () => {

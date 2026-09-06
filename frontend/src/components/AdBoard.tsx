@@ -64,7 +64,11 @@ export function AdBoard({ ads, disabled, onSolve, onRefresh }: AdBoardProps) {
         </IconButton>
       </Stack>
       {shown.length === 0 ? (
-        <Typography>No ads to show.</Typography>
+        <Typography>
+          {ads.length === 0
+            ? 'The board is empty right now. Refresh to look again.'
+            : 'None of the current ads is recommended. Switch off “Recommended only” to see all of them, or refresh.'}
+        </Typography>
       ) : (
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
           {shown.map((ad) => (
