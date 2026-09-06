@@ -16,9 +16,12 @@ import com.company.dragonsofmugloar.domain.game.Game;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.game.SolveResult;
 import com.company.dragonsofmugloar.exception.AdNotAvailableException;
+import com.company.dragonsofmugloar.observability.GameMetrics;
+import com.company.dragonsofmugloar.repository.BoardRepository;
 import com.company.dragonsofmugloar.repository.GameRepository;
 import com.company.dragonsofmugloar.service.strategy.AdRecommender;
 import com.company.dragonsofmugloar.service.strategy.PurchasePolicy;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,11 +47,13 @@ class GamePlayerTest {
     void setUp() {
         AutoplayProperties properties = TestProperties.autoplay();
         GameRepository games = new GameRepository();
+        GameMetrics metrics = new GameMetrics(new SimpleMeterRegistry());
         GameService gameService = new GameService(gameApiClient, games);
         AdRecommender recommender = new AdRecommender(properties);
-        player = new GamePlayer(gameService, new AdService(gameApiClient, games, gameService, recommender),
-                new ShopService(gameApiClient, games, gameService), recommender, new PurchasePolicy(properties),
-                properties);
+        player = new GamePlayer(gameService,
+                new AdService(gameApiClient, games, new BoardRepository(), gameService, recommender, metrics),
+                new ShopService(gameApiClient, games, gameService, metrics), recommender,
+                new PurchasePolicy(properties), properties);
         when(gameApiClient.getAds(GAME_ID)).thenReturn(List.of(SAFE_AD));
     }
 

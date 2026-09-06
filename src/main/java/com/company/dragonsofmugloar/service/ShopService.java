@@ -4,6 +4,7 @@ import com.company.dragonsofmugloar.client.GameApiClient;
 import com.company.dragonsofmugloar.domain.game.Game;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.shop.ShopItem;
+import com.company.dragonsofmugloar.observability.GameMetrics;
 import com.company.dragonsofmugloar.repository.GameRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class ShopService {
     private final GameApiClient gameApiClient;
     private final GameRepository gameRepository;
     private final GameService gameService;
+    private final GameMetrics gameMetrics;
 
     public List<ShopItem> getShopItems(String gameId) {
         gameService.getGame(gameId);
@@ -30,6 +32,7 @@ public class ShopService {
         Game game = gameService.getGame(gameId);
         PurchaseResult result = gameApiClient.buyItem(gameId, itemId);
         gameRepository.save(game.afterPurchase(result));
+        gameMetrics.countItemPurchased(itemId, result.success());
         log.info("Item purchased: gameId={}, itemId={}, success={}, gold={}, level={}, lives={}",
                 gameId, itemId, result.success(), result.gold(), result.level(), result.lives());
         return result;

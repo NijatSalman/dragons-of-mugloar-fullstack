@@ -10,7 +10,9 @@ import com.company.dragonsofmugloar.domain.game.Game;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.shop.ShopItem;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
+import com.company.dragonsofmugloar.observability.GameMetrics;
 import com.company.dragonsofmugloar.repository.GameRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,8 @@ class ShopServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ShopService(gameApiClient, gameRepository, new GameService(gameApiClient, gameRepository));
+        service = new ShopService(gameApiClient, gameRepository, new GameService(gameApiClient, gameRepository),
+                new GameMetrics(new SimpleMeterRegistry()));
     }
 
     @Test
