@@ -33,18 +33,16 @@ public class GamePlayer {
     private final AutoplayProperties properties;
 
     /**
-     * Starts a new game and plays it, passing the game state to {@code onProgress} after each turn. Plays until
-     * the game is over or the board no longer offers a recommended ad, which happens in the game's end phase.
+     * Starts a new game and plays it until the lives run out, as the task asks, passing the game state to
+     * {@code onProgress} after each turn. The turn cap only guards against a server that never ends the game.
      */
     public Game playNewGame(Consumer<Game> onProgress) {
         Game game = gameService.startGame();
+        String gameId = game.gameId();
         for (int turn = 1; turn <= properties.maxTurns() && !game.isOver(); turn++) {
-            Optional<AdRecommendation> chosen = chooseBestAd(game.gameId());
-            if (chosen.isEmpty()) {
-                logNoRecommendedAd(game);
-                break;
-            }
-            game = playOneTurn(game.gameId(), chosen.get());
+            AdRecommendation chosen = chooseBestAd(gameId)
+                    .orElseThrow(() -> new IllegalStateException("Board empty: gameId=" + gameId));
+            game = playOneTurn(gameId, chosen);
             onProgress.accept(game);
         }
         log.info("Autoplay finished: gameId={}, score={}, turn={}, lives={}",
@@ -57,10 +55,6 @@ public class GamePlayer {
         solveChosenAd(gameId, chosen);
         buyIfWorthIt(gameId);
         return gameService.getGame(gameId);
-    }
-
-    private static void logNoRecommendedAd(Game game) {
-        log.info("Autoplay Game stopped: gameId={}, turn={}, reason=no recommended ad", game.gameId(), game.turn());
     }
 
     private Optional<AdRecommendation> chooseBestAd(String gameId) {

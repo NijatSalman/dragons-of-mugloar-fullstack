@@ -75,20 +75,6 @@ class GamePlayerTest {
     }
 
     @Test
-    void playNewGameStopsWhenTheBoardOffersNoRecommendedAd() {
-        Ad intruders = new Ad("NAiJlGN2", "Help defending palace in Loweburg from the intruders", 132, 7,
-                Probability.IMPOSSIBLE);
-        when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 4488, 10, 6589, 6589, 95));
-        when(gameApiClient.getAds(GAME_ID)).thenReturn(List.of(intruders));
-
-        Game finished = player.playNewGame(game -> { });
-
-        assertThat(finished).isEqualTo(new Game(GAME_ID, 3, 4488, 10, 6589, 6589, 95));
-        verify(gameApiClient, never()).solveAd(anyString(), anyString());
-        verify(gameApiClient, never()).buyItem(anyString(), anyString());
-    }
-
-    @Test
     void playNewGameBuysWhatThePolicySaysAfterSolving() {
         when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 120, 0, 300, 300, 10));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs")).thenReturn(
