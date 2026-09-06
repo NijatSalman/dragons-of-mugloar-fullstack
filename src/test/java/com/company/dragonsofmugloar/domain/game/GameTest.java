@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 class GameTest {
 
     @Test
-    void gameIsOverWhenNoLivesRemain() {
+    void isOverReturnsTrueWhenNoLivesRemain() {
         assertThat(new Game("ggLmesXI", 0, 87, 3, 1462, 1462, 41).isOver()).isTrue();
     }
 
     @Test
-    void gameContinuesWhileLivesRemain() {
+    void isOverReturnsFalseWhileLivesRemain() {
         assertThat(new Game("ggLmesXI", 1, 87, 3, 1462, 1462, 41).isOver()).isFalse();
     }
 }

@@ -10,7 +10,7 @@ class GameRepositoryTest {
     private final GameRepository repository = new GameRepository();
 
     @Test
-    void savedGameIsFoundById() {
+    void findByIdReturnsTheSavedGame() {
         Game game = new Game("ggLmesXI", 3, 0, 0, 0, 0, 0);
 
         repository.save(game);
@@ -19,7 +19,7 @@ class GameRepositoryTest {
     }
 
     @Test
-    void savingAgainReplacesTheState() {
+    void saveReplacesThePreviousState() {
         repository.save(new Game("ggLmesXI", 3, 0, 0, 0, 0, 0));
         repository.save(new Game("ggLmesXI", 2, 45, 1, 210, 210, 9));
 
@@ -27,7 +27,7 @@ class GameRepositoryTest {
     }
 
     @Test
-    void unknownIdIsEmpty() {
+    void findByIdReturnsEmptyWhenIdIsUnknown() {
         assertThat(repository.findById("nope1234")).isEmpty();
     }
 }

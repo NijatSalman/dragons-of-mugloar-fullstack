@@ -6,6 +6,7 @@ import com.company.dragonsofmugloar.client.dto.BuyPayload;
 import com.company.dragonsofmugloar.client.dto.ReputationPayload;
 import com.company.dragonsofmugloar.client.dto.ShopItemPayload;
 import com.company.dragonsofmugloar.client.dto.SolvePayload;
+import com.company.dragonsofmugloar.config.CacheConfig;
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.game.Game;
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
@@ -76,7 +78,12 @@ class GameApiRestClient implements GameApiClient {
                 response.highScore(), response.turn(), response.message());
     }
 
+    /**
+     * The catalogue is the same for every game and does not change while the application runs, so it is fetched
+     * once and served from the cache afterwards.
+     */
     @Override
+    @Cacheable(cacheNames = CacheConfig.SHOP_ITEMS, key = "'catalogue'")
     @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<ShopItem> getShopItems(String gameId) {
         List<ShopItemPayload> items = sendRequest(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)

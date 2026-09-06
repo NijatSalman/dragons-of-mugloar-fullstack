@@ -27,7 +27,7 @@ class ApiExceptionHandlerTest {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void traceIdIsInTheMdcAsMicrometerWouldPutIt() {
+    void putTraceIdIntoMdc() {
         MDC.put("traceId", TRACE_ID);
     }
 
@@ -37,7 +37,7 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
-    void unknownGameIs404WithTraceId() throws Exception {
+    void handleGameNotFoundReturns404WithTraceId() throws Exception {
         mockMvc.perform(get("/throw/not-found"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Not Found"))
@@ -46,41 +46,41 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
-    void finishedGameIs410() throws Exception {
+    void handleGameOverReturns410() throws Exception {
         mockMvc.perform(get("/throw/game-over"))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.detail").value("Game over: gameId=ggLmesXI"));
     }
 
     @Test
-    void rejectedRequestIs409() throws Exception {
+    void handleAdNotAvailableReturns409() throws Exception {
         mockMvc.perform(get("/throw/rejected"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("Ad not available: gameId=ggLmesXI, adId=HiCtYxHC"));
     }
 
     @Test
-    void unavailableGameServerIs502WithoutInternals() throws Exception {
+    void handleGameApiReturns502WithoutInternals() throws Exception {
         mockMvc.perform(get("/throw/unavailable"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.detail").value("Game server is currently unavailable"));
     }
 
     @Test
-    void unexpectedErrorIs500WithoutInternals() throws Exception {
+    void handleUnexpectedReturns500WithoutInternals() throws Exception {
         mockMvc.perform(get("/throw/unexpected"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.detail").value("Unexpected error"));
     }
 
     @Test
-    void invalidPathVariableIs400() throws Exception {
+    void frameworkValidationReturns400WhenPathVariableIsInvalid() throws Exception {
         mockMvc.perform(get("/throw/validated/not valid!"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void unknownPathIs404() throws Exception {
+    void frameworkReturns404WhenPathIsUnknown() throws Exception {
         mockMvc.perform(get("/no/such/path"))
                 .andExpect(status().isNotFound());
     }

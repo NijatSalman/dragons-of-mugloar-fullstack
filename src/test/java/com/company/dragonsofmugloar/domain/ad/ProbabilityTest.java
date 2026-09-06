@@ -14,25 +14,25 @@ class ProbabilityTest {
 
     @ParameterizedTest
     @EnumSource(value = Probability.class, mode = EnumSource.Mode.EXCLUDE, names = "UNKNOWN")
-    void everyServerLabelParsesBackToItself(Probability probability) {
+    void fromLabelParsesEveryServerLabel(Probability probability) {
         assertThat(Probability.fromLabel(probability.label())).isEqualTo(probability);
     }
 
     @ParameterizedTest
     @CsvSource({"piece of cake, PIECE_OF_CAKE", "  Sure thing , SURE_THING", "HMMM...., HMMM"})
-    void parsingIgnoresCaseAndSurroundingSpaces(String label, Probability expected) {
+    void fromLabelIgnoresCaseAndSurroundingSpaces(String label, Probability expected) {
         assertThat(Probability.fromLabel(label)).isEqualTo(expected);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"Totally new label", "Unknown"})
-    void unrecognisedLabelsBecomeUnknown(String label) {
+    void fromLabelReturnsUnknownWhenLabelIsUnrecognised(String label) {
         assertThat(Probability.fromLabel(label)).isEqualTo(Probability.UNKNOWN);
     }
 
     @Test
-    void chancesDecreaseFromSureThingToImpossible() {
+    void successChanceDecreasesFromSureThingToImpossible() {
         double[] chances = Arrays.stream(Probability.values())
                 .filter(probability -> probability != Probability.UNKNOWN)
                 .mapToDouble(Probability::successChance)

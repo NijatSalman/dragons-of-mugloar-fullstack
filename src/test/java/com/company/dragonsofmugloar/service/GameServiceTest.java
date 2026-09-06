@@ -35,7 +35,7 @@ class GameServiceTest {
     }
 
     @Test
-    void startingAGameStoresIt() {
+    void startGameStoresTheNewGame() {
         when(gameApiClient.startGame()).thenReturn(NEW_GAME);
 
         Game game = service.startGame();
@@ -45,13 +45,13 @@ class GameServiceTest {
     }
 
     @Test
-    void unknownGameIsRejectedBeforeCallingTheServer() {
+    void investigateReputationThrowsGameNotFoundBeforeCallingTheServer() {
         assertThatThrownBy(() -> service.investigateReputation("nope1234")).isInstanceOf(GameNotFoundException.class);
         verifyNoInteractions(gameApiClient);
     }
 
     @Test
-    void reputationIsPassedThrough() {
+    void investigateReputationReturnsTheServersScores() {
         gameRepository.save(NEW_GAME);
         Reputation reputation = new Reputation(0.4, -1.2, 0);
         when(gameApiClient.investigateReputation(GAME_ID)).thenReturn(reputation);
