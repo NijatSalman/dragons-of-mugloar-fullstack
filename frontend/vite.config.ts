@@ -11,6 +11,19 @@ export default defineConfig({
       '/api': process.env.BACKEND_URL ?? 'http://localhost:8080',
     },
   },
+  build: {
+    // Libraries change rarely; keeping them in their own chunk lets the browser cache them across deployments.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'mui', test: /node_modules[\\/](@mui|@emotion)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
