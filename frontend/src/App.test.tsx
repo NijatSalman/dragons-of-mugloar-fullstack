@@ -20,6 +20,19 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
+  it('loadsTheShopOnceAGameIsRunning', () => {
+    const { actions } = renderWithGame(<App />, { game: runningGame })
+
+    expect(actions.loadShop).toHaveBeenCalledOnce()
+  })
+
+  it('showsTheShopNextToTheBoard', () => {
+    renderWithGame(<App />, { game: runningGame, shop: [{ itemId: 'hpot', name: 'Healing potion', cost: 50 }] })
+
+    expect(screen.getByRole('region', { name: 'Shop' })).toBeInTheDocument()
+    expect(screen.getByText('Healing potion')).toBeInTheDocument()
+  })
+
   it('showsGameOverInsteadOfTheBoardWhenLivesAreGone', () => {
     renderWithGame(<App />, { game: finishedGame, ads: [quiteLikelyAd] })
 
