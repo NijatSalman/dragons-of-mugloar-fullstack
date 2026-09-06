@@ -4,22 +4,21 @@ import com.company.dragonsofmugloar.controller.dto.AdResponse;
 import com.company.dragonsofmugloar.controller.dto.GameResponse;
 import com.company.dragonsofmugloar.controller.dto.ReputationResponse;
 import com.company.dragonsofmugloar.controller.dto.SolveResultResponse;
-import com.company.dragonsofmugloar.domain.Game;
+import com.company.dragonsofmugloar.service.AdService;
 import com.company.dragonsofmugloar.service.GameService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Pattern;
-import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/v1/games")
@@ -31,15 +30,14 @@ public class GameController {
     static final String ID_PATTERN = "[A-Za-z0-9]{1,64}";
 
     private final GameService gameService;
+    private final AdService adService;
 
     @PostMapping
     @Operation(summary = "Start a new game")
     @ApiResponse(responseCode = "201", description = "Game started")
-    public ResponseEntity<GameResponse> startGame() {
-        Game game = gameService.startGame();
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{gameId}")
-                .buildAndExpand(game.gameId()).toUri();
-        return ResponseEntity.created(location).body(GameResponse.from(game));
+    @ResponseStatus(HttpStatus.CREATED)
+    public GameResponse startGame() {
+        return GameResponse.from(gameService.startGame());
     }
 
     @GetMapping("/{gameId}")
@@ -52,16 +50,16 @@ public class GameController {
     @GetMapping("/{gameId}/ads")
     @Operation(summary = "Ads on the board, best first, each with chance, expected value and a recommendation")
     @ApiResponse(responseCode = "410", description = "Game is over")
-    public List<AdResponse> getAds(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId) {
-        return gameService.getAds(gameId).stream().map(AdResponse::from).toList();
+    public List<AdResponse> getRecommendedAds(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId) {
+        return adService.getRecommendedAds(gameId).stream().map(AdResponse::from).toList();
     }
 
     @PostMapping("/{gameId}/ads/{adId}/solve")
     @Operation(summary = "Attempt an ad; costs one turn and, on failure, one life")
     @ApiResponse(responseCode = "409", description = "Ad no longer exists")
-    public SolveResultResponse solve(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId,
+    public SolveResultResponse solveAd(@PathVariable @Pattern(regexp = ID_PATTERN) String gameId,
                                @PathVariable @Pattern(regexp = ID_PATTERN) String adId) {
-        return SolveResultResponse.from(gameService.solve(gameId, adId));
+        return SolveResultResponse.from(adService.solveAd(gameId, adId));
     }
 
     @PostMapping("/{gameId}/reputation")

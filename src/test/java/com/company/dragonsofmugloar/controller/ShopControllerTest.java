@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.company.dragonsofmugloar.domain.PurchaseResult;
-import com.company.dragonsofmugloar.domain.ShopItem;
+import com.company.dragonsofmugloar.domain.game.PurchaseResult;
+import com.company.dragonsofmugloar.domain.shop.ShopItem;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.service.ShopService;
 import java.util.List;
@@ -31,7 +31,7 @@ class ShopControllerTest {
 
     @Test
     void listsItems() throws Exception {
-        when(shopService.getItems("ggLmesXI")).thenReturn(List.of(
+        when(shopService.getShopItems("ggLmesXI")).thenReturn(List.of(
                 new ShopItem("hpot", "Healing potion", 50), new ShopItem("cs", "Claw Sharpening", 100)));
 
         mvc.perform(get(SHOP_URL))
@@ -44,7 +44,7 @@ class ShopControllerTest {
 
     @Test
     void buysAnItem() throws Exception {
-        when(shopService.buy("ggLmesXI", "cs")).thenReturn(new PurchaseResult(true, 20, 3, 1, 16));
+        when(shopService.buyItem("ggLmesXI", "cs")).thenReturn(new PurchaseResult(true, 20, 3, 1, 16));
 
         mvc.perform(post(SHOP_URL + "/cs"))
                 .andExpect(status().isOk())
@@ -56,8 +56,7 @@ class ShopControllerTest {
 
     @Test
     void unavailableGameServerIs502() throws Exception {
-        when(shopService.getItems("ggLmesXI")).thenThrow(new GameApiException(
-                GameApiException.Reason.UNAVAILABLE, "Game server failed: gameId=ggLmesXI, status=503"));
+        when(shopService.getShopItems("ggLmesXI")).thenThrow(new GameApiException("Game server failed: gameId=ggLmesXI, status=503"));
 
         mvc.perform(get(SHOP_URL))
                 .andExpect(status().isBadGateway())

@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.AdRecommendation;
+import com.company.dragonsofmugloar.domain.ad.AdRecommendation;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "An ad from the board together with our recommendation")

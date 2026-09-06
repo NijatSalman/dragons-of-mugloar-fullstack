@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.SolveResult;
+import com.company.dragonsofmugloar.domain.game.SolveResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Outcome of attempting an ad")

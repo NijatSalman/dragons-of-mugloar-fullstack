@@ -1,4 +1,4 @@
-package com.company.dragonsofmugloar.domain;
+package com.company.dragonsofmugloar.domain.game;
 
 /** Snapshot of a game as last reported by the game server. */
 public record Game(String gameId, int lives, int gold, int level, int score, int highScore, int turn) {

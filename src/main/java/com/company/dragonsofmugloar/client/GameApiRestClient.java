@@ -1,8 +1,5 @@
 package com.company.dragonsofmugloar.client;
 
-import static com.company.dragonsofmugloar.exception.GameApiException.Reason.REJECTED;
-import static com.company.dragonsofmugloar.exception.GameApiException.Reason.UNAVAILABLE;
-
 import com.company.dragonsofmugloar.client.dto.StartGamePayload;
 import com.company.dragonsofmugloar.client.dto.MessagePayload;
 import com.company.dragonsofmugloar.client.dto.BuyPayload;
@@ -10,19 +7,22 @@ import com.company.dragonsofmugloar.client.dto.ReputationPayload;
 import com.company.dragonsofmugloar.client.dto.ShopItemPayload;
 import com.company.dragonsofmugloar.client.dto.SolvePayload;
 import com.company.dragonsofmugloar.config.GameApiProperties;
-import com.company.dragonsofmugloar.domain.Ad;
-import com.company.dragonsofmugloar.domain.Game;
-import com.company.dragonsofmugloar.domain.Probability;
-import com.company.dragonsofmugloar.domain.PurchaseResult;
-import com.company.dragonsofmugloar.domain.Reputation;
-import com.company.dragonsofmugloar.domain.ShopItem;
-import com.company.dragonsofmugloar.domain.SolveResult;
+import com.company.dragonsofmugloar.domain.ad.Ad;
+import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.ad.Probability;
+import com.company.dragonsofmugloar.domain.game.PurchaseResult;
+import com.company.dragonsofmugloar.domain.game.Reputation;
+import com.company.dragonsofmugloar.domain.shop.ShopItem;
+import com.company.dragonsofmugloar.domain.game.SolveResult;
+import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
 import java.util.List;
 import java.util.function.Supplier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
@@ -52,7 +52,7 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     public Game startGame() {
-        StartGamePayload response = call(null, () -> restClient.post().uri("/game/start")
+        StartGamePayload response = sendRequest(null, () -> restClient.post().uri("/game/start")
                 .retrieve().body(StartGamePayload.class));
         return new Game(response.gameId(), response.lives(), response.gold(), response.level(), response.score(),
                 response.highScore(), response.turn());
@@ -61,30 +61,32 @@ class GameApiRestClient implements GameApiClient {
     @Override
     @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
     public List<Ad> getAds(String gameId) {
-        List<MessagePayload> messages = call(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
+        List<MessagePayload> messages = sendRequest(gameId, () -> restClient.get().uri("/{gameId}/messages", gameId)
                 .retrieve().body(MESSAGE_LIST));
         return messages.stream().map(GameApiRestClient::toAd).toList();
     }
 
     @Override
-    public SolveResult solve(String gameId, String adId) {
-        SolvePayload response = call(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
-                .retrieve().body(SolvePayload.class));
+    public SolveResult solveAd(String gameId, String adId) {
+        SolvePayload response = sendRequest(gameId, () -> restClient.post().uri("/{gameId}/solve/{adId}", gameId, adId)
+                .retrieve()
+                .onStatus(GameApiRestClient::isBadRequest, adNotAvailable(gameId, adId))
+                .body(SolvePayload.class));
         return new SolveResult(response.success(), response.lives(), response.gold(), response.score(),
                 response.highScore(), response.turn(), response.message());
     }
 
     @Override
     @Retryable(includes = GameApiException.class, maxRetries = 1, delay = 200)
-    public List<ShopItem> getShop(String gameId) {
-        List<ShopItemPayload> items = call(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
+    public List<ShopItem> getShopItems(String gameId) {
+        List<ShopItemPayload> items = sendRequest(gameId, () -> restClient.get().uri("/{gameId}/shop", gameId)
                 .retrieve().body(SHOP_LIST));
         return items.stream().map(item -> new ShopItem(item.id(), item.name(), item.cost())).toList();
     }
 
     @Override
-    public PurchaseResult buy(String gameId, String itemId) {
-        BuyPayload response = call(gameId, () -> restClient.post()
+    public PurchaseResult buyItem(String gameId, String itemId) {
+        BuyPayload response = sendRequest(gameId, () -> restClient.post()
                 .uri("/{gameId}/shop/buy/{itemId}", gameId, itemId)
                 .retrieve().body(BuyPayload.class));
         return new PurchaseResult(response.shoppingSuccess(), response.gold(), response.lives(), response.level(),
@@ -93,7 +95,7 @@ class GameApiRestClient implements GameApiClient {
 
     @Override
     public Reputation investigateReputation(String gameId) {
-        ReputationPayload response = call(gameId, () -> restClient.post()
+        ReputationPayload response = sendRequest(gameId, () -> restClient.post()
                 .uri("/{gameId}/investigate/reputation", gameId)
                 .retrieve().body(ReputationPayload.class));
         return new Reputation(response.people(), response.state(), response.underworld());
@@ -113,30 +115,41 @@ class GameApiRestClient implements GameApiClient {
      *
      * @param gameId the game the request belongs to, or {@code null} when starting a new game
      */
-    private static <T> T call(String gameId, Supplier<T> request) {
+    private static boolean isBadRequest(HttpStatusCode status) {
+        return status.value() == HttpStatus.BAD_REQUEST.value();
+    }
+
+    /** On a solve, a rejected request means the ad is no longer on the board. */
+    private static RestClient.ResponseSpec.ErrorHandler adNotAvailable(String gameId, String adId) {
+        return (request, response) -> {
+            throw new AdNotAvailableException(gameId, adId);
+        };
+    }
+
+    private static <T> T sendRequest(String gameId, Supplier<T> request) {
         try {
             T body = request.get();
             if (body == null) {
-                throw new GameApiException(UNAVAILABLE, "Game server response empty: gameId=" + gameId);
+                throw new GameApiException("Game server response empty: gameId=" + gameId);
             }
             return body;
         } catch (RestClientResponseException httpError) {
-            throw toException(httpError.getStatusCode().value(), gameId);
+            throw exceptionFor(httpError.getStatusCode().value(), gameId);
         } catch (ResourceAccessException networkError) {
-            throw new GameApiException(UNAVAILABLE,
-                    "Game server unreachable: gameId=" + gameId + ", cause=" + networkError.getMessage(), networkError);
+            throw new GameApiException("Game server unreachable: gameId=" + gameId + ", cause=" + networkError.getMessage(),
+                    networkError);
         } catch (RestClientException clientError) {
-            throw new GameApiException(UNAVAILABLE,
-                    "Game server response unreadable: gameId=" + gameId + ", cause=" + clientError.getMessage(), clientError);
+            throw new GameApiException("Game server response unreadable: gameId=" + gameId + ", cause=" + clientError.getMessage(),
+                    clientError);
         }
     }
 
-    private static RuntimeException toException(int status, String gameId) {
+    private static RuntimeException exceptionFor(int status, String gameId) {
         return switch (status) {
-            case 400 -> new GameApiException(REJECTED, "Game server rejected request: gameId=" + gameId);
             case 404 -> new GameNotFoundException(gameId);
             case 410 -> new GameOverException(gameId);
-            default -> new GameApiException(UNAVAILABLE, "Game server failed: gameId=" + gameId + ", status=" + status);
+            default -> new GameApiException("Game server failed: gameId=" + gameId + ", status=" + status);
         };
     }
+
 }

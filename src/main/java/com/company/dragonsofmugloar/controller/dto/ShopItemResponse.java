@@ -1,6 +1,6 @@
 package com.company.dragonsofmugloar.controller.dto;
 
-import com.company.dragonsofmugloar.domain.ShopItem;
+import com.company.dragonsofmugloar.domain.shop.ShopItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "An item for sale")

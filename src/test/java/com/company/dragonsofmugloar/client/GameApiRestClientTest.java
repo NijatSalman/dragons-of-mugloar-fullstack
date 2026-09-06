@@ -11,13 +11,14 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.config.ResilienceConfig;
-import com.company.dragonsofmugloar.domain.Ad;
-import com.company.dragonsofmugloar.domain.Game;
-import com.company.dragonsofmugloar.domain.Probability;
-import com.company.dragonsofmugloar.domain.PurchaseResult;
-import com.company.dragonsofmugloar.domain.Reputation;
-import com.company.dragonsofmugloar.domain.ShopItem;
-import com.company.dragonsofmugloar.domain.SolveResult;
+import com.company.dragonsofmugloar.domain.ad.Ad;
+import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.ad.Probability;
+import com.company.dragonsofmugloar.domain.game.PurchaseResult;
+import com.company.dragonsofmugloar.domain.game.Reputation;
+import com.company.dragonsofmugloar.domain.shop.ShopItem;
+import com.company.dragonsofmugloar.domain.game.SolveResult;
+import com.company.dragonsofmugloar.exception.AdNotAvailableException;
 import com.company.dragonsofmugloar.exception.GameApiException;
 import com.company.dragonsofmugloar.exception.GameNotFoundException;
 import com.company.dragonsofmugloar.exception.GameOverException;
@@ -88,7 +89,7 @@ class GameApiRestClientTest {
                          "message":"You successfully solved the mission!"}
                         """, MediaType.APPLICATION_JSON));
 
-        assertThat(client.solve("ggLmesXI", "DSAUBsXa"))
+        assertThat(client.solveAd("ggLmesXI", "DSAUBsXa"))
                 .isEqualTo(new SolveResult(true, 3, 4, 4, 0, 2, "You successfully solved the mission!"));
     }
 
@@ -99,7 +100,7 @@ class GameApiRestClientTest {
                         [{"id":"hpot","name":"Healing potion","cost":50},{"id":"cs","name":"Claw Sharpening","cost":100}]
                         """, MediaType.APPLICATION_JSON));
 
-        assertThat(client.getShop("ggLmesXI")).containsExactly(
+        assertThat(client.getShopItems("ggLmesXI")).containsExactly(
                 new ShopItem("hpot", "Healing potion", 50),
                 new ShopItem("cs", "Claw Sharpening", 100));
     }
@@ -111,7 +112,7 @@ class GameApiRestClientTest {
                         {"shoppingSuccess":false,"gold":4,"lives":3,"level":0,"turn":3}
                         """, MediaType.APPLICATION_JSON));
 
-        assertThat(client.buy("ggLmesXI", "hpot")).isEqualTo(new PurchaseResult(false, 4, 3, 0, 3));
+        assertThat(client.buyItem("ggLmesXI", "hpot")).isEqualTo(new PurchaseResult(false, 4, 3, 0, 3));
     }
 
     @Test
@@ -125,14 +126,13 @@ class GameApiRestClientTest {
     }
 
     @Test
-    void badRequestWithHtmlBodyIsARejectedRequest() {
+    void badRequestOnSolveMeansTheAdIsGone() {
         server.expect(requestTo(BASE + "/ggLmesXI/solve/HiCtYxHC"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.TEXT_HTML).body(HTML_ERROR));
 
-        assertThatThrownBy(() -> client.solve("ggLmesXI", "HiCtYxHC"))
-                .isInstanceOfSatisfying(GameApiException.class,
-                        failure -> assertThat(failure.getReason()).isEqualTo(GameApiException.Reason.REJECTED))
-                .hasMessageContaining("gameId=ggLmesXI");
+        assertThatThrownBy(() -> client.solveAd("ggLmesXI", "HiCtYxHC"))
+                .isInstanceOf(AdNotAvailableException.class)
+                .hasMessageContaining("gameId=ggLmesXI, adId=HiCtYxHC");
     }
 
     @Test
@@ -149,7 +149,7 @@ class GameApiRestClientTest {
     void goneBecomesGameOverException() {
         server.expect(requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa")).andRespond(withStatus(HttpStatus.GONE));
 
-        assertThatThrownBy(() -> client.solve("ggLmesXI", "DSAUBsXa"))
+        assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa"))
                 .isInstanceOf(GameOverException.class)
                 .hasMessageContaining("Game over: gameId=ggLmesXI");
     }
@@ -170,9 +170,8 @@ class GameApiRestClientTest {
         server.expect(times(2), requestTo(BASE + "/ggLmesXI/shop"))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        assertThatThrownBy(() -> client.getShop("ggLmesXI"))
-                .isInstanceOfSatisfying(GameApiException.class,
-                        failure -> assertThat(failure.getReason()).isEqualTo(GameApiException.Reason.UNAVAILABLE))
+        assertThatThrownBy(() -> client.getShopItems("ggLmesXI"))
+                .isInstanceOf(GameApiException.class)
                 .hasMessageContaining("status=500");
         server.verify();
     }
@@ -182,7 +181,7 @@ class GameApiRestClientTest {
     void solveIsNeverRetried() {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa")).andRespond(withStatus(HttpStatus.BAD_GATEWAY));
 
-        assertThatThrownBy(() -> client.solve("ggLmesXI", "DSAUBsXa")).isInstanceOf(GameApiException.class);
+        assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa")).isInstanceOf(GameApiException.class);
         server.verify();
     }
 
@@ -191,9 +190,8 @@ class GameApiRestClientTest {
         server.expect(times(1), requestTo(BASE + "/ggLmesXI/solve/DSAUBsXa"))
                 .andRespond(withException(new SocketTimeoutException("Read timed out")));
 
-        assertThatThrownBy(() -> client.solve("ggLmesXI", "DSAUBsXa"))
-                .isInstanceOfSatisfying(GameApiException.class,
-                        failure -> assertThat(failure.getReason()).isEqualTo(GameApiException.Reason.UNAVAILABLE))
+        assertThatThrownBy(() -> client.solveAd("ggLmesXI", "DSAUBsXa"))
+                .isInstanceOf(GameApiException.class)
                 .hasMessageContaining("Game server unreachable: gameId=ggLmesXI");
     }
 }

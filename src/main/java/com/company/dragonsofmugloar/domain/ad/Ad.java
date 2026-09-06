@@ -1,4 +1,4 @@
-package com.company.dragonsofmugloar.domain;
+package com.company.dragonsofmugloar.domain.ad;
 
 /**
  * An ad (task) from the message board, already decoded into plain text.
