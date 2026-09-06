@@ -1,9 +1,11 @@
 import { AppBar, Box, Container, Stack, Toolbar, Typography } from '@mui/material'
+import { useEffect } from 'react'
 import { AdBoard } from './components/AdBoard'
 import { DragonMark } from './components/DragonMark'
 import { ErrorBanner } from './components/ErrorBanner'
 import { GameOverBanner } from './components/GameOverBanner'
 import { NoticeBar } from './components/NoticeBar'
+import { ShopPanel } from './components/ShopPanel'
 import { StartPanel } from './components/StartPanel'
 import { StatusBar } from './components/StatusBar'
 import { useGame } from './state/useGame'
@@ -11,6 +13,12 @@ import { useGame } from './state/useGame'
 /** Page shell: title bar, the play area and a footer. Shows the start panel until a game is running. */
 export function App() {
   const { state, actions } = useGame()
+  const playing = state.game !== undefined && !state.game.over
+
+  // The catalogue is the same for every game; load it once a game exists.
+  useEffect(() => {
+    if (playing && state.shop.length === 0) void actions.loadShop()
+  }, [playing, state.shop.length, actions])
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -28,8 +36,11 @@ export function App() {
           {!state.game && <StartPanel />}
           {state.game && <StatusBar game={state.game} />}
           {state.game?.over && <GameOverBanner game={state.game} onStartAgain={actions.resetGame} />}
-          {state.game && !state.game.over && (
-            <AdBoard ads={state.ads} disabled={state.busy} onSolve={(adId) => void actions.solveAd(adId)} onRefresh={() => void actions.refreshAds()} />
+          {playing && state.game && (
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, alignItems: 'start' }}>
+              <AdBoard ads={state.ads} disabled={state.busy} onSolve={(adId) => void actions.solveAd(adId)} onRefresh={() => void actions.refreshAds()} />
+              <ShopPanel items={state.shop} gold={state.game.gold} disabled={state.busy} onBuy={(itemId) => void actions.buyItem(itemId)} />
+            </Box>
           )}
         </Stack>
       </Container>
