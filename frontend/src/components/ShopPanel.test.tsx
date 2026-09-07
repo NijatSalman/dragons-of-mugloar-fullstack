@@ -9,7 +9,7 @@ const items: ShopItem[] = [
 ]
 
 describe('ShopPanel', () => {
-  it('showsEveryItemWithEffectAndCost', () => {
+  it('shopPanelShowsEveryItemWithEffectAndCost', () => {
     render(<ShopPanel items={items} gold={120} disabled={false} onBuy={vi.fn()} />)
 
     expect(screen.getByText('Healing potion')).toBeInTheDocument()
@@ -18,7 +18,7 @@ describe('ShopPanel', () => {
     expect(screen.getByText('Claw Sharpening')).toBeInTheDocument()
   })
 
-  it('buyButtonReportsTheItemId', async () => {
+  it('shopPanelBuyButtonReportsTheItemId', async () => {
     const onBuy = vi.fn()
     render(<ShopPanel items={items} gold={120} disabled={false} onBuy={onBuy} />)
 
@@ -27,7 +27,7 @@ describe('ShopPanel', () => {
     expect(onBuy).toHaveBeenCalledWith('hpot')
   })
 
-  it('buyIsDisabledForItemsThatCostMoreThanTheGold', () => {
+  it('shopPanelBuyIsDisabledForItemsThatCostMoreThanTheGold', () => {
     render(<ShopPanel items={items} gold={60} disabled={false} onBuy={vi.fn()} />)
 
     const [potionBuy, clawsBuy] = screen.getAllByRole('button', { name: 'Buy' })
@@ -35,13 +35,13 @@ describe('ShopPanel', () => {
     expect(clawsBuy).toBeDisabled()
   })
 
-  it('everyBuyIsDisabledWhileBusy', () => {
+  it('shopPanelEveryBuyIsDisabledWhileBusy', () => {
     render(<ShopPanel items={items} gold={1000} disabled onBuy={vi.fn()} />)
 
     screen.getAllByRole('button', { name: 'Buy' }).forEach((button) => expect(button).toBeDisabled())
   })
 
-  it('showsAMessageWhenThereAreNoItems', () => {
+  it('shopPanelShowsAMessageWhenThereAreNoItems', () => {
     render(<ShopPanel items={[]} gold={0} disabled={false} onBuy={vi.fn()} />)
 
     expect(screen.getByText('The shop is closed.')).toBeInTheDocument()

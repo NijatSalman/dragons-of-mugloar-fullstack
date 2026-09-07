@@ -15,7 +15,7 @@ describe('useAutoplayPolling', () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
-  it('refreshesARunningSessionEveryInterval', () => {
+  it('useAutoplayPollingRefreshesARunningSessionEveryInterval', () => {
     const refresh = vi.fn().mockResolvedValue(undefined)
     renderHook(() => useAutoplayPolling(session('RUNNING'), refresh))
 
@@ -25,7 +25,7 @@ describe('useAutoplayPolling', () => {
     expect(refresh).toHaveBeenCalledWith('84e1bfd2-3f61-467d-8fe5-90b9bc358e39')
   })
 
-  it('stopsOnceTheSessionIsFinished', () => {
+  it('useAutoplayPollingStopsOnceTheSessionIsFinished', () => {
     const refresh = vi.fn().mockResolvedValue(undefined)
     renderHook(() => useAutoplayPolling(session('FINISHED'), refresh))
 
@@ -34,7 +34,7 @@ describe('useAutoplayPolling', () => {
     expect(refresh).not.toHaveBeenCalled()
   })
 
-  it('doesNothingWithoutASession', () => {
+  it('useAutoplayPollingDoesNothingWithoutASession', () => {
     const refresh = vi.fn().mockResolvedValue(undefined)
     renderHook(() => useAutoplayPolling(undefined, refresh))
 
