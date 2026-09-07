@@ -1,6 +1,7 @@
 package com.company.dragonsofmugloar.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -13,6 +14,7 @@ import com.company.dragonsofmugloar.config.AutoplayProperties;
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.game.SolveResult;
 import com.company.dragonsofmugloar.exception.AdNotAvailableException;
@@ -59,7 +61,7 @@ class GamePlayerTest {
 
     @Test
     void playNewGameSolvesTurnAfterTurnUntilNoLivesRemain() {
-        when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0));
+        when(gameApiClient.startGame(any())).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0, GameOrigin.MANUAL));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs")).thenReturn(
                 new SolveResult(false, 2, 0, 0, 0, 1, "You failed on the mission!"),
                 new SolveResult(false, 1, 0, 0, 0, 2, "You failed on the mission!"),
@@ -76,7 +78,7 @@ class GamePlayerTest {
 
     @Test
     void playNewGameBuysWhatThePolicySaysAfterSolving() {
-        when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 120, 0, 300, 300, 10));
+        when(gameApiClient.startGame(any())).thenReturn(new Game(GAME_ID, 3, 120, 0, 300, 300, 10, GameOrigin.MANUAL));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs")).thenReturn(
                 new SolveResult(true, 3, 154, 334, 334, 11, "You successfully solved the mission!"),
                 new SolveResult(false, 0, 54, 334, 334, 13, "You failed on the mission!"));
@@ -89,7 +91,7 @@ class GamePlayerTest {
 
     @Test
     void playNewGameSkipsAnAdThatVanishedBeforeSolving() {
-        when(gameApiClient.startGame()).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0));
+        when(gameApiClient.startGame(any())).thenReturn(new Game(GAME_ID, 3, 0, 0, 0, 0, 0, GameOrigin.MANUAL));
         when(gameApiClient.solveAd(GAME_ID, "KdX1gKEs"))
                 .thenThrow(new AdNotAvailableException(GAME_ID, "KdX1gKEs"))
                 .thenReturn(new SolveResult(false, 0, 0, 0, 0, 2, "You failed on the mission!"));

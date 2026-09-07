@@ -12,6 +12,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import com.company.dragonsofmugloar.config.GameApiProperties;
 import com.company.dragonsofmugloar.domain.ad.Ad;
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.domain.ad.Probability;
 import com.company.dragonsofmugloar.domain.game.PurchaseResult;
 import com.company.dragonsofmugloar.domain.game.Reputation;
@@ -65,7 +66,7 @@ class GameApiRestClientTest {
                         {"gameId":"ggLmesXI","lives":3,"gold":0,"level":0,"score":0,"highScore":0,"turn":0}
                         """, MediaType.APPLICATION_JSON));
 
-        assertThat(client.startGame()).isEqualTo(new Game("ggLmesXI", 3, 0, 0, 0, 0, 0));
+        assertThat(client.startGame(GameOrigin.MANUAL)).isEqualTo(new Game("ggLmesXI", 3, 0, 0, 0, 0, 0, GameOrigin.MANUAL));
     }
 
     @Test

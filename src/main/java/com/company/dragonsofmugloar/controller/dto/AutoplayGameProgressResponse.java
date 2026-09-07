@@ -13,10 +13,12 @@ public record AutoplayGameProgressResponse(
         @Schema(example = "5239") int score,
         @Schema(example = "201") int turn,
         @Schema(example = "0") int lives,
+        @Schema(example = "87") int gold,
+        @Schema(example = "3") int level,
         @Schema(description = "Only present when the game failed") String error) {
 
     public static AutoplayGameProgressResponse from(AutoplayGameProgress outcome) {
         return new AutoplayGameProgressResponse(outcome.gameId(), outcome.status(), outcome.score(), outcome.turn(),
-                outcome.lives(), outcome.error());
+                outcome.lives(), outcome.gold(), outcome.level(), outcome.error());
     }
 }

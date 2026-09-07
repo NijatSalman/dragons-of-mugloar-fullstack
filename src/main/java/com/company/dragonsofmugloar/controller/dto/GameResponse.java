@@ -1,6 +1,7 @@
 package com.company.dragonsofmugloar.controller.dto;
 
 import com.company.dragonsofmugloar.domain.game.Game;
+import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Current state of a game")
@@ -12,10 +13,11 @@ public record GameResponse(
         @Schema(example = "1462") int score,
         @Schema(example = "1462") int highScore,
         @Schema(example = "41") int turn,
-        @Schema(description = "True once no lives remain") boolean over) {
+        @Schema(description = "True once no lives remain") boolean over,
+        @Schema(description = "Who plays it") GameOrigin origin) {
 
     public static GameResponse from(Game game) {
         return new GameResponse(game.gameId(), game.lives(), game.gold(), game.level(), game.score(),
-                game.highScore(), game.turn(), game.isOver());
+                game.highScore(), game.turn(), game.isOver(), game.origin());
     }
 }
