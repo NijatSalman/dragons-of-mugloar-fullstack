@@ -21,7 +21,8 @@ public class AutoplayGameSessionRepository {
         return Optional.ofNullable(sessions.get(sessionId));
     }
 
-    public void update(String sessionId, UnaryOperator<AutoplayGameSession> change) {
-        sessions.computeIfPresent(sessionId, (id, session) -> change.apply(session));
+    /** Applies {@code change} atomically and returns the updated session, empty when the session is unknown. */
+    public Optional<AutoplayGameSession> update(String sessionId, UnaryOperator<AutoplayGameSession> change) {
+        return Optional.ofNullable(sessions.computeIfPresent(sessionId, (key, session) -> change.apply(session)));
     }
 }

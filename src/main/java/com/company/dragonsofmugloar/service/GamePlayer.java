@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
  * The bot. Plays one game from start to game over using the same services a human uses through the UI.
  * Every turn: solve the best ad on the board, then buy what the purchase policy says.
  *
- * <p>Turns within a game session one after another, because each server call advances that game. Different games
- * are independent and session in parallel, one thread each; see {@link AutoplayGameService}.
+ * <p>Turns within one game run one after another, because each server call advances that game. Different games
+ * are independent and run in parallel, one thread each; see {@link AutoplayGameService}.
  */
 @Slf4j
 @Service
@@ -61,7 +61,20 @@ public class GamePlayer {
     private Optional<AdRecommendation> chooseBestAd(String gameId) {
         Game game = gameService.getGame(gameId);
         List<AdRecommendation> board = adService.getRecommendedAds(gameId);
-        return adRecommender.chooseAd(board, game.lives(), game.gold());
+        Optional<AdRecommendation> chosen = adRecommender.chooseAd(board, game.lives(), game.gold());
+        chosen.ifPresent(choice -> logChoice(game, choice));
+        return chosen;
+    }
+
+    /** A recommended pick is routine; an unrecommended one means the board was hostile and the safest ad was taken. */
+    private static void logChoice(Game game, AdRecommendation choice) {
+        if (choice.recommended()) {
+            log.debug("Ad chosen: gameId={}, adId={}, chance={}, expectedValue={}, lives={}, gold={}",
+                    game.gameId(), choice.ad().adId(), choice.successChance(), choice.expectedValue(), game.lives(), game.gold());
+        } else {
+            log.info("Board hostile, safest ad taken: gameId={}, adId={}, chance={}, lives={}, gold={}, turn={}",
+                    game.gameId(), choice.ad().adId(), choice.successChance(), game.lives(), game.gold(), game.turn());
+        }
     }
 
     private void solveChosenAd(String gameId, AdRecommendation chosen) {

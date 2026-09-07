@@ -53,7 +53,7 @@ curl -s -X POST http://localhost:8080/api/v1/games | jq
 | Service | URL | Notes |
 |---|---|---|
 | Web app and API | http://localhost:8080 | `/swagger-ui.html` for the API |
-| Prometheus | http://localhost:9090 | scrapes the app every 5 s |
+| Prometheus | http://localhost:9090 | scrapes the app every 15 s |
 | Grafana | http://localhost:3000 | dashboard **Dragons of Mugloar**; anonymous viewer, admin/admin to edit |
 
 Ports taken? `APP_PORT=8091 GRAFANA_PORT=3001 docker compose up --build`.
@@ -246,7 +246,7 @@ Swagger UI at `/swagger-ui.html`. All routes are under `/api/v1`.
 | `POST` | `/autoplay/sessions?games=N` | play N games (1 to 20) in the background, `202` |
 | `GET` | `/autoplay/sessions/{sessionId}` | progress and per-game results |
 
-Ids are validated as `[A-Za-z0-9+/=_-]{1,64}` before anything is called. Errors are `application/problem+json`, always
+Game and ad ids are validated as `[A-Za-z0-9]{1,64}` and session ids as UUIDs before anything is called. Errors are `application/problem+json`, always
 with the trace id of the request:
 
 ```json
