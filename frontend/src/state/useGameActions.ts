@@ -41,6 +41,7 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
 
       /** After a page reload. The game server forgets games after a while; then we forget them too. */
       resumeGame: async (id: string) => {
+        dispatch({ type: 'RESTORE_STARTED' })
         dispatch({ type: 'REQUEST_STARTED' })
         try {
           dispatch({ type: 'GAME_LOADED', game: await gameApi.getGame(id) })

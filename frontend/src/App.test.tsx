@@ -13,6 +13,13 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Start new game' })).toBeInTheDocument()
   })
 
+  it('showsALoadingHintInsteadOfTheStartPanelWhileRestoring', () => {
+    renderWithGame(<App />, { restoring: true })
+
+    expect(screen.getByText('Loading your game…')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
+  })
+
   it('showsStatusBarAndAdBoardWhenAGameIsRunning', () => {
     renderWithGame(<App />, { game: runningGame, ads: [quiteLikelyAd] })
 

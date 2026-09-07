@@ -145,7 +145,7 @@ describe('useGameActions', () => {
 
     await actionsFor().resumeGame('ggLmesXI')
 
-    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['REQUEST_STARTED', 'GAME_LOADED', 'ADS_LOADED'])
+    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['RESTORE_STARTED', 'REQUEST_STARTED', 'GAME_LOADED', 'ADS_LOADED'])
   })
 
   it('resumeGameForgetsAGameTheServerNoLongerKnows', async () => {

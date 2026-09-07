@@ -114,6 +114,14 @@ describe('gameReducer', () => {
     expect(state.busy).toBe(true)
   })
 
+  it('restoreStartedIsClearedOnceTheGameIsLoaded', () => {
+    const restoring = gameReducer(initialState, { type: 'RESTORE_STARTED' })
+    expect(restoring.restoring).toBe(true)
+
+    const loaded = gameReducer(restoring, { type: 'GAME_LOADED', game })
+    expect(loaded.restoring).toBe(false)
+  })
+
   it('gameExpiredForgetsTheGameAndExplainsWhy', () => {
     const state = gameReducer(playing, { type: 'GAME_EXPIRED' })
 

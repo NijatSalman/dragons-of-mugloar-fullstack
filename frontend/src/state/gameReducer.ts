@@ -15,15 +15,18 @@ export interface State {
   session?: AutoplaySession
   leaderboard: GameSummary[]
   busy: boolean
+  /** True while a remembered game is being loaded after a page reload. */
+  restoring: boolean
   error?: ApiError
   notice?: Notice
 }
 
-export const initialState: State = { ads: [], shop: [], leaderboard: [], busy: false }
+export const initialState: State = { ads: [], shop: [], leaderboard: [], busy: false, restoring: false }
 
 /** What can happen. Each action says what occurred; the reducer decides what it means for the state. */
 export type Action =
   | { type: 'REQUEST_STARTED' }
+  | { type: 'RESTORE_STARTED' }
   | { type: 'REQUEST_FAILED'; error: ApiError }
   | { type: 'ERROR_DISMISSED' }
   | { type: 'NOTICE_DISMISSED' }
@@ -44,8 +47,10 @@ export function gameReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'REQUEST_STARTED':
       return { ...state, busy: true, error: undefined }
+    case 'RESTORE_STARTED':
+      return { ...state, restoring: true }
     case 'REQUEST_FAILED':
-      return { ...state, busy: false, error: action.error }
+      return { ...state, busy: false, restoring: false, error: action.error }
     case 'ERROR_DISMISSED':
       return { ...state, error: undefined }
     case 'NOTICE_DISMISSED':
@@ -53,7 +58,7 @@ export function gameReducer(state: State, action: Action): State {
     case 'GAME_STARTED':
       return { ...initialState, session: state.session, leaderboard: state.leaderboard, game: action.game, notice: { message: 'A new game has started. Good luck!', tone: 'info' } }
     case 'GAME_LOADED':
-      return { ...state, game: action.game, busy: false }
+      return { ...state, game: action.game, busy: false, restoring: false }
     case 'ADS_LOADED':
       return { ...state, ads: action.ads, busy: false }
     case 'AD_SOLVED':

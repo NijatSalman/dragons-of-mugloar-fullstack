@@ -1,4 +1,4 @@
-import { AppBar, Box, Container, Stack, Tab, Tabs, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, CircularProgress, Container, Stack, Tab, Tabs, Toolbar, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { AdBoard } from './components/AdBoard'
 import { AutoplayPanel } from './components/AutoplayPanel'
@@ -76,6 +76,14 @@ export function App() {
 /** Playing by hand: start panel, or status bar with the board and the shop, or the game-over card. */
 function PlayTab() {
   const { state, actions } = useGame()
+  if (state.restoring) {
+    return (
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', py: 6 }}>
+        <CircularProgress size={28} />
+        <Typography>Loading your game…</Typography>
+      </Stack>
+    )
+  }
   if (!state.game) return <StartPanel />
   const game = state.game
   return (
