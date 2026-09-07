@@ -73,6 +73,8 @@ BACKEND_URL=http://localhost:8091 npm run dev    # when the backend runs elsewhe
 - **Autoplay**: let the dragon play 1 to 20 games at once and watch score, gold, level and lives update live.
 - **Top scores**: the ten best finished games since the backend started, marked as played by hand or by the dragon.
 
+![The board: each ad with its odds, reward, value and a recommended mark; the shop on the right](docs/images/play-board.png)
+
 ## 🧪 Testing
 
 ```bash
@@ -203,6 +205,8 @@ Sessions of 3 to 20 games were played against the live server on 6 and 7 Septemb
 6800 points; the lowest observed final score was 4565 against a requirement of 1000. A game takes 5 to 10 minutes,
 because the request rate towards the game server is capped (next section).
 
+![Four games running at once in the autoplay view](docs/images/autoplay-session.png)
+
 ## 🏦 Game server limits and failures
 
 The game server allows about 1150 requests per minute per address and then answers `429` with `Retry-After` for the
@@ -266,6 +270,8 @@ with the trace id of the request:
   rate per label, purchases, request rates and latencies towards our API and the game server, limiter permits, JVM heap.
   One autoplay session fills it.
 - `/actuator/health` with liveness and readiness probes, `/actuator/info` with build info.
+
+![Grafana dashboard after a four-game autoplay session](docs/images/grafana-dashboard.png)
 
 ## 🏗️ Design notes
 
