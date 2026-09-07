@@ -3,9 +3,37 @@ services:
     build: .
     image: dragons-of-mugloar:local
     container_name: dragons-of-mugloar
-    # Change the host port when 8080 is taken: APP_PORT=8090 docker compose up
+    # Change the host port when 8080 is taken: APP_PORT=8091 docker compose up
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
       GAME_API_BASE_URL: https://dragonsofmugloar.com/api/v2
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: dragons-prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    container_name: dragons-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
     restart: unless-stopped
