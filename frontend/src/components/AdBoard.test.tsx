@@ -10,13 +10,13 @@ function shownTitles() {
 }
 
 describe('AdBoard', () => {
-  it('sortsByExpectedValueByDefault', () => {
+  it('adBoardSortsByExpectedValueByDefault', () => {
     render(<AdBoard ads={ads} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
     expect(shownTitles()).toEqual([playingWithFireAd.message, quiteLikelyAd.message, pieceOfCakeAd.message])
   })
 
-  it('sortsSafestFirstWhenAsked', async () => {
+  it('adBoardSortsSafestFirstWhenAsked', async () => {
     render(<AdBoard ads={ads} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Sort ads by' }))
@@ -25,7 +25,7 @@ describe('AdBoard', () => {
     expect(shownTitles()).toEqual([pieceOfCakeAd.message, quiteLikelyAd.message, playingWithFireAd.message])
   })
 
-  it('recommendedOnlyHidesRiskyAds', async () => {
+  it('adBoardRecommendedOnlyHidesRiskyAds', async () => {
     render(<AdBoard ads={ads} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText('Recommended only'))
@@ -34,7 +34,7 @@ describe('AdBoard', () => {
     expect(shownTitles()).toHaveLength(2)
   })
 
-  it('refreshButtonAsksForANewBoard', async () => {
+  it('adBoardRefreshButtonAsksForANewBoard', async () => {
     const onRefresh = vi.fn()
     render(<AdBoard ads={ads} disabled={false} onSolve={vi.fn()} onRefresh={onRefresh} />)
 
@@ -43,7 +43,7 @@ describe('AdBoard', () => {
     expect(onRefresh).toHaveBeenCalledOnce()
   })
 
-  it('solvingAnAdReportsItsId', async () => {
+  it('adBoardSolvingAnAdReportsItsId', async () => {
     const onSolve = vi.fn()
     render(<AdBoard ads={[quiteLikelyAd]} disabled={false} onSolve={onSolve} onRefresh={vi.fn()} />)
 
@@ -52,13 +52,13 @@ describe('AdBoard', () => {
     expect(onSolve).toHaveBeenCalledWith('DSAUBsXa')
   })
 
-  it('explainsAnEmptyBoard', () => {
+  it('adBoardExplainsAnEmptyBoard', () => {
     render(<AdBoard ads={[]} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
     expect(screen.getByText(/board is empty/)).toBeInTheDocument()
   })
 
-  it('explainsWhenTheFilterHidesEveryAd', async () => {
+  it('adBoardExplainsWhenTheFilterHidesEveryAd', async () => {
     render(<AdBoard ads={[playingWithFireAd]} disabled={false} onSolve={vi.fn()} onRefresh={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText('Recommended only'))

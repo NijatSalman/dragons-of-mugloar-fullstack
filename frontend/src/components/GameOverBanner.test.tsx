@@ -4,14 +4,14 @@ import { finishedGame } from '../test/fixtures'
 import { GameOverBanner } from './GameOverBanner'
 
 describe('GameOverBanner', () => {
-  it('showsTheFinalScoreAndTurns', () => {
+  it('gameOverBannerShowsTheFinalScoreAndTurns', () => {
     render(<GameOverBanner game={finishedGame} onStartAgain={vi.fn()} />)
 
     expect(screen.getByText(/201 turns/)).toBeInTheDocument()
     expect(screen.getByText('5239')).toBeInTheDocument()
   })
 
-  it('startAgainButtonResetsTheGame', async () => {
+  it('gameOverBannerStartAgainButtonResetsTheGame', async () => {
     const onStartAgain = vi.fn()
     render(<GameOverBanner game={finishedGame} onStartAgain={onStartAgain} />)
 

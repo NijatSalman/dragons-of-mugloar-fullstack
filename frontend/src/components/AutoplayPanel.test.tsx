@@ -18,7 +18,7 @@ const runningSession: AutoplaySession = {
 }
 
 describe('AutoplayPanel', () => {
-  it('startButtonReportsTheChosenNumberOfGames', async () => {
+  it('autoplayPanelStartButtonReportsTheChosenNumberOfGames', async () => {
     const onStart = vi.fn()
     render(<AutoplayPanel disabled={false} onStart={onStart} />)
 
@@ -30,7 +30,7 @@ describe('AutoplayPanel', () => {
     expect(onStart).toHaveBeenCalledWith(5)
   })
 
-  it('startButtonIsDisabledForAnInvalidNumberOfGames', async () => {
+  it('autoplayPanelStartButtonIsDisabledForAnInvalidNumberOfGames', async () => {
     render(<AutoplayPanel disabled={false} onStart={vi.fn()} />)
 
     const input = screen.getByRole('spinbutton', { name: 'Number of games' })
@@ -41,13 +41,13 @@ describe('AutoplayPanel', () => {
     expect(screen.getByText('1 to 20')).toBeInTheDocument()
   })
 
-  it('startButtonIsDisabledWhileASessionIsRunning', () => {
+  it('autoplayPanelStartButtonIsDisabledWhileASessionIsRunning', () => {
     render(<AutoplayPanel session={runningSession} disabled={false} onStart={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'Start autoplay' })).toBeDisabled()
   })
 
-  it('showsProgressOfEveryGameAndTheSummary', () => {
+  it('autoplayPanelShowsProgressOfEveryGameAndTheSummary', () => {
     render(<AutoplayPanel session={runningSession} disabled={false} onStart={vi.fn()} />)
 
     expect(screen.getByText('1 of 3 games finished')).toBeInTheDocument()

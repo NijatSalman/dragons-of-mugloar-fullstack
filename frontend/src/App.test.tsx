@@ -6,21 +6,21 @@ import { finishedGame, quiteLikelyAd, runningGame } from './test/fixtures'
 import { renderWithGame } from './test/renderWithGame'
 
 describe('App', () => {
-  it('showsTheStartPanelWhenNoGameIsRunning', () => {
+  it('appShowsTheStartPanelWhenNoGameIsRunning', () => {
     renderWithGame(<App />)
 
     expect(screen.getByRole('heading', { name: 'Dragons of Mugloar' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start new game' })).toBeInTheDocument()
   })
 
-  it('showsALoadingHintInsteadOfTheStartPanelWhileRestoring', () => {
+  it('appShowsALoadingHintInsteadOfTheStartPanelWhileRestoring', () => {
     renderWithGame(<App />, { restoring: true })
 
     expect(screen.getByText('Loading your game…')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
-  it('showsStatusBarAndAdBoardWhenAGameIsRunning', () => {
+  it('appShowsStatusBarAndAdBoardWhenAGameIsRunning', () => {
     renderWithGame(<App />, { game: runningGame, ads: [quiteLikelyAd] })
 
     expect(screen.getByText('3 lives')).toBeInTheDocument()
@@ -28,33 +28,33 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
-  it('loadsTheShopOnceAGameIsRunning', () => {
+  it('appLoadsTheShopOnceAGameIsRunning', () => {
     const { actions } = renderWithGame(<App />, { game: runningGame })
 
     expect(actions.loadShop).toHaveBeenCalledOnce()
   })
 
-  it('showsTheShopNextToTheBoard', () => {
+  it('appShowsTheShopNextToTheBoard', () => {
     renderWithGame(<App />, { game: runningGame, shop: [{ itemId: 'hpot', name: 'Healing potion', cost: 50 }] })
 
     expect(screen.getByRole('region', { name: 'Shop' })).toBeInTheDocument()
     expect(screen.getByText('Healing potion')).toBeInTheDocument()
   })
 
-  it('showsGameOverInsteadOfTheBoardWhenLivesAreGone', () => {
+  it('appShowsGameOverInsteadOfTheBoardWhenLivesAreGone', () => {
     renderWithGame(<App />, { game: finishedGame, ads: [quiteLikelyAd] })
 
     expect(screen.getByRole('heading', { name: 'Game over' })).toBeInTheDocument()
     expect(screen.queryByText(quiteLikelyAd.message)).not.toBeInTheDocument()
   })
 
-  it('showsTheServersNoticeAfterATurn', () => {
+  it('appShowsTheServersNoticeAfterATurn', () => {
     renderWithGame(<App />, { game: runningGame, notice: { message: 'You successfully solved the mission!', tone: 'success' } })
 
     expect(screen.getByText('You successfully solved the mission!')).toBeInTheDocument()
   })
 
-  it('showsTheAutoplayPanelOnItsTab', async () => {
+  it('appShowsTheAutoplayPanelOnItsTab', async () => {
     renderWithGame(<App />)
 
     await userEvent.click(screen.getByRole('tab', { name: 'Autoplay' }))
@@ -63,7 +63,7 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
-  it('loadsAndShowsTheLeaderboardOnItsTab', async () => {
+  it('appLoadsAndShowsTheLeaderboardOnItsTab', async () => {
     const { actions } = renderWithGame(<App />, {
       leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3 }],
     })
@@ -74,7 +74,7 @@ describe('App', () => {
     expect(screen.getByText('jz21oOWI')).toBeInTheDocument()
   })
 
-  it('opensTheTabNamedInTheUrlHash', () => {
+  it('appOpensTheTabNamedInTheUrlHash', () => {
     window.location.hash = '#autoplay'
 
     renderWithGame(<App />)
@@ -83,7 +83,7 @@ describe('App', () => {
     window.location.hash = ''
   })
 
-  it('leaveGameReturnsToTheStartPanel', async () => {
+  it('appLeaveGameReturnsToTheStartPanel', async () => {
     const { actions } = renderWithGame(<App />, { game: runningGame })
 
     await userEvent.click(screen.getByRole('button', { name: 'Leave game' }))
@@ -91,7 +91,7 @@ describe('App', () => {
     expect(actions.resetGame).toHaveBeenCalledOnce()
   })
 
-  it('showsTheErrorBannerWithTheTraceId', () => {
+  it('appShowsTheErrorBannerWithTheTraceId', () => {
     renderWithGame(<App />, {
       error: new ApiError(502, 'Bad Gateway', 'Game server is currently unavailable', '4bf92f3577b34da6a3ce929d0e0e4736'),
     })
