@@ -9,7 +9,7 @@ const games: GameSummary[] = [
 ]
 
 describe('LeaderboardPanel', () => {
-  it('ranksGamesAndSaysHowEachWasPlayed', () => {
+  it('leaderboardPanelRanksGamesAndSaysHowEachWasPlayed', () => {
     render(<LeaderboardPanel games={games} disabled={false} onRefresh={vi.fn()} />)
 
     const rows = screen.getAllByRole('row').slice(1)
@@ -17,7 +17,7 @@ describe('LeaderboardPanel', () => {
     expect(rows[1]).toHaveTextContent('2ggLmesXImanual146241121')
   })
 
-  it('refreshButtonReloadsTheBoard', async () => {
+  it('leaderboardPanelRefreshButtonReloadsTheBoard', async () => {
     const onRefresh = vi.fn()
     render(<LeaderboardPanel games={games} disabled={false} onRefresh={onRefresh} />)
 
@@ -26,7 +26,7 @@ describe('LeaderboardPanel', () => {
     expect(onRefresh).toHaveBeenCalledOnce()
   })
 
-  it('explainsAnEmptyLeaderboard', () => {
+  it('leaderboardPanelExplainsAnEmptyLeaderboard', () => {
     render(<LeaderboardPanel games={[]} disabled={false} onRefresh={vi.fn()} />)
 
     expect(screen.getByText(/No finished games yet/)).toBeInTheDocument()

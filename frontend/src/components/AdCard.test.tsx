@@ -4,7 +4,7 @@ import { playingWithFireAd, quiteLikelyAd } from '../test/fixtures'
 import { AdCard } from './AdCard'
 
 describe('AdCard', () => {
-  it('showsMessageOddsRewardValueExpiryAndRecommendation', () => {
+  it('adCardShowsMessageOddsRewardValueExpiryAndRecommendation', () => {
     render(<AdCard ad={quiteLikelyAd} disabled={false} onSolve={vi.fn()} />)
 
     expect(screen.getByText(quiteLikelyAd.message)).toBeInTheDocument()
@@ -15,14 +15,14 @@ describe('AdCard', () => {
     expect(screen.getByText('recommended')).toBeInTheDocument()
   })
 
-  it('hidesTheRecommendationForARiskyAd', () => {
+  it('adCardHidesTheRecommendationForARiskyAd', () => {
     render(<AdCard ad={playingWithFireAd} disabled={false} onSolve={vi.fn()} />)
 
     expect(screen.queryByText('recommended')).not.toBeInTheDocument()
     expect(screen.getByText('1 turn left')).toBeInTheDocument()
   })
 
-  it('solveButtonReportsTheAdId', async () => {
+  it('adCardSolveButtonReportsTheAdId', async () => {
     const onSolve = vi.fn()
     render(<AdCard ad={quiteLikelyAd} disabled={false} onSolve={onSolve} />)
 
@@ -31,7 +31,7 @@ describe('AdCard', () => {
     expect(onSolve).toHaveBeenCalledWith('DSAUBsXa')
   })
 
-  it('solveButtonIsDisabledWhileBusy', () => {
+  it('adCardSolveButtonIsDisabledWhileBusy', () => {
     render(<AdCard ad={quiteLikelyAd} disabled onSolve={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'Solve' })).toBeDisabled()
