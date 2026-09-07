@@ -11,12 +11,12 @@ interface LeaderboardPanelProps {
 /** The ten best finished games this backend has seen, played by hand or by the dragon, highest score first. */
 export function LeaderboardPanel({ games, disabled, onRefresh }: LeaderboardPanelProps) {
   return (
-    <Paper component="section" aria-label="Leaderboard" sx={{ p: 2 }}>
+    <Paper component="section" aria-label="Top scores" sx={{ p: 2 }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
         <Typography variant="h2" component="h2" sx={{ flex: 1 }}>
-          Top 10 games
+          Top 10 scores
         </Typography>
-        <IconButton aria-label="Refresh leaderboard" onClick={onRefresh} disabled={disabled}>
+        <IconButton aria-label="Refresh top scores" onClick={onRefresh} disabled={disabled}>
           <RefreshIcon />
         </IconButton>
       </Stack>

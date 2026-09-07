@@ -21,7 +21,7 @@ describe('LeaderboardPanel', () => {
     const onRefresh = vi.fn()
     render(<LeaderboardPanel games={games} disabled={false} onRefresh={onRefresh} />)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Refresh leaderboard' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh top scores' }))
 
     expect(onRefresh).toHaveBeenCalledOnce()
   })

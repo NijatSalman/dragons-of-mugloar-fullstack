@@ -61,7 +61,7 @@ describe('App', () => {
       leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3 }],
     })
 
-    await userEvent.click(screen.getByRole('tab', { name: 'Leaderboard' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Top scores' }))
 
     expect(actions.loadLeaderboard).toHaveBeenCalled()
     expect(screen.getByText('jz21oOWI')).toBeInTheDocument()
