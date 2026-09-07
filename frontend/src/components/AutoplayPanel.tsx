@@ -2,6 +2,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import {
   Button,
   Chip,
+  CircularProgress,
   LinearProgress,
   Paper,
   Stack,
@@ -53,7 +54,7 @@ export function AutoplayPanel({ session, disabled, onStart }: AutoplayPanelProps
         </Button>
       </Stack>
       <Typography variant="body2" sx={{ mt: 1, color: 'rgba(43,33,24,0.7)' }}>
-        Games run in parallel on the server; each one plays until its dragon runs out of lives.
+        Several dragons play at the same time; each game lasts until its dragon runs out of lives.
       </Typography>
       {session && <SessionProgress session={session} />}
     </Paper>
@@ -64,7 +65,12 @@ function SessionProgress({ session }: { session: AutoplaySession }) {
   return (
     <Stack spacing={1} sx={{ mt: 2 }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
-        <Chip size="small" color={session.status === 'FINISHED' ? 'success' : 'primary'} label={session.status.toLowerCase()} />
+        <Chip
+          size="small"
+          color={session.status === 'FINISHED' ? 'success' : 'primary'}
+          icon={session.status === 'RUNNING' ? <CircularProgress size={12} color="inherit" /> : undefined}
+          label={session.status === 'RUNNING' ? 'running' : 'finished'}
+        />
         <Typography variant="body2">
           {session.finished} of {session.requested} games finished
         </Typography>
@@ -83,6 +89,8 @@ function SessionProgress({ session }: { session: AutoplaySession }) {
             <TableCell align="right">Score</TableCell>
             <TableCell align="right">Turn</TableCell>
             <TableCell align="right">Lives</TableCell>
+            <TableCell align="right">Gold</TableCell>
+            <TableCell align="right">Level</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -101,11 +109,19 @@ function GameRow({ game }: { game: AutoplayGameProgress }) {
     <TableRow>
       <TableCell>{game.gameId ?? 'starting…'}</TableCell>
       <TableCell>
-        <Chip size="small" color={tone} label={game.status.toLowerCase()} title={game.error} />
+        <Chip
+          size="small"
+          color={tone}
+          icon={game.status === 'RUNNING' ? <CircularProgress size={12} color="inherit" /> : undefined}
+          label={game.status.toLowerCase()}
+          title={game.error}
+        />
       </TableCell>
       <TableCell align="right">{game.score}</TableCell>
       <TableCell align="right">{game.turn}</TableCell>
       <TableCell align="right">{game.lives}</TableCell>
+      <TableCell align="right">{game.gold}</TableCell>
+      <TableCell align="right">{game.level}</TableCell>
     </TableRow>
   )
 }

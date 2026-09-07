@@ -16,6 +16,7 @@ describe('gameApi', () => {
   it.each([
     ['startGame', () => gameApi.startGame(), 'POST', '/api/v1/games'],
     ['getGame', () => gameApi.getGame('ggLmesXI'), 'GET', '/api/v1/games/ggLmesXI'],
+    ['getTopGames', () => gameApi.getTopGames(), 'GET', '/api/v1/games?limit=10'],
     ['getRecommendedAds', () => gameApi.getRecommendedAds('ggLmesXI'), 'GET', '/api/v1/games/ggLmesXI/ads'],
     ['solveAd', () => gameApi.solveAd('ggLmesXI', 'DSAUBsXa'), 'POST', '/api/v1/games/ggLmesXI/ads/DSAUBsXa/solve'],
     ['investigateReputation', () => gameApi.investigateReputation('ggLmesXI'), 'POST', '/api/v1/games/ggLmesXI/reputation'],

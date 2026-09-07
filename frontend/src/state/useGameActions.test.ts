@@ -14,11 +14,12 @@ vi.mock('../api/gameApi', () => ({
     buyItem: vi.fn(),
     startAutoplay: vi.fn(),
     getAutoplayProgress: vi.fn(),
+    getTopGames: vi.fn(),
   },
 }))
 
 const api = vi.mocked(gameApi)
-const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false }
+const game: Game = { gameId: 'ggLmesXI', lives: 3, gold: 0, level: 0, score: 0, highScore: 0, turn: 0, over: false, origin: 'MANUAL' }
 const ads: Ad[] = [
   {
     adId: 'DSAUBsXa',
@@ -144,7 +145,7 @@ describe('useGameActions', () => {
 
     await actionsFor().resumeGame('ggLmesXI')
 
-    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['REQUEST_STARTED', 'GAME_LOADED', 'ADS_LOADED'])
+    expect(dispatch.mock.calls.map(([action]) => action.type)).toEqual(['RESTORE_STARTED', 'REQUEST_STARTED', 'GAME_LOADED', 'ADS_LOADED'])
   })
 
   it('resumeGameForgetsAGameTheServerNoLongerKnows', async () => {

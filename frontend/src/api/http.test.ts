@@ -50,7 +50,7 @@ describe('request', () => {
 
     const error = await request('GET', '/api/v1/games').catch((caught: ApiError) => caught)
 
-    expect(error).toMatchObject({ status: 0, title: 'Network error' })
+    expect(error).toMatchObject({ status: 0, title: 'Connection problem' })
   })
 
   it('requestFallsBackToStatusTextWhenTheBodyIsNotJson', async () => {

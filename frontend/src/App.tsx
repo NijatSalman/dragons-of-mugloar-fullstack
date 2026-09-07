@@ -1,10 +1,11 @@
-import { AppBar, Box, Container, Stack, Toolbar, Typography } from '@mui/material'
-import { useEffect } from 'react'
+import { AppBar, Box, CircularProgress, Container, Stack, Tab, Tabs, Toolbar, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { AdBoard } from './components/AdBoard'
 import { AutoplayPanel } from './components/AutoplayPanel'
 import { DragonMark } from './components/DragonMark'
 import { ErrorBanner } from './components/ErrorBanner'
 import { GameOverBanner } from './components/GameOverBanner'
+import { LeaderboardPanel } from './components/LeaderboardPanel'
 import { NoticeBar } from './components/NoticeBar'
 import { ShopPanel } from './components/ShopPanel'
 import { StartPanel } from './components/StartPanel'
@@ -12,11 +13,30 @@ import { StatusBar } from './components/StatusBar'
 import { useAutoplayPolling } from './hooks/useAutoplayPolling'
 import { useGame } from './state/useGame'
 
-/** Page shell: title bar, the play area and a footer. Shows the start panel until a game is running. */
+type Tab = 'play' | 'autoplay' | 'leaderboard'
+const TABS: Tab[] = ['play', 'autoplay', 'leaderboard']
+
+/** The selected tab lives in the URL hash, so a reload and the back button keep it. */
+function tabFromHash(): Tab {
+  const hash = window.location.hash.replace('#', '')
+  return (TABS as string[]).includes(hash) ? (hash as Tab) : 'play'
+}
+
+/** Page shell: title bar, three tabs (play by hand, let the dragon play, leaderboard) and a footer. */
 export function App() {
   const { state, actions } = useGame()
+  const [tab, setTab] = useState<Tab>(tabFromHash)
   const playing = state.game !== undefined && !state.game.over
   useAutoplayPolling(state.session, actions.refreshAutoplay)
+
+  useEffect(() => {
+    window.location.hash = tab === 'play' ? '' : tab
+  }, [tab])
+
+  // The leaderboard is fetched whenever its tab is opened.
+  useEffect(() => {
+    if (tab === 'leaderboard') void actions.loadLeaderboard()
+  }, [tab, actions])
 
   // The catalogue is the same for every game; load it once a game exists.
   useEffect(() => {
@@ -26,26 +46,34 @@ export function App() {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" component="header">
-        <Toolbar sx={{ gap: 1.5 }}>
+        <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap' }}>
           <DragonMark sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h1" component="h1" sx={{ color: 'primary.main' }}>
+          <Typography variant="h1" component="h1" sx={{ color: 'primary.main', flex: 1 }}>
             Dragons of Mugloar
           </Typography>
+          <Tabs
+            value={tab}
+            onChange={(_event, next: Tab) => setTab(next)}
+            textColor="inherit"
+            indicatorColor="primary"
+            sx={{ '& .MuiTab-root': { color: 'rgba(241,228,200,0.75)', fontFamily: '"Cinzel", Georgia, serif', fontWeight: 700 }, '& .Mui-selected': { color: 'primary.main' } }}
+          >
+            <Tab value="play" label="Play" />
+            <Tab value="autoplay" label="Autoplay" />
+            <Tab value="leaderboard" label="Top scores" />
+          </Tabs>
         </Toolbar>
       </AppBar>
       <Container component="main" maxWidth="lg" sx={{ flex: 1, py: 3 }}>
         <Stack spacing={2}>
           {state.error && <ErrorBanner error={state.error} onDismiss={actions.dismissError} />}
-          {!state.game && <StartPanel />}
-          {state.game && <StatusBar game={state.game} />}
-          {state.game?.over && <GameOverBanner game={state.game} onStartAgain={actions.resetGame} />}
-          {playing && state.game && (
-            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, alignItems: 'start' }}>
-              <AdBoard ads={state.ads} disabled={state.busy} onSolve={(adId) => void actions.solveAd(adId)} onRefresh={() => void actions.refreshAds()} />
-              <ShopPanel items={state.shop} gold={state.game.gold} disabled={state.busy} onBuy={(itemId) => void actions.buyItem(itemId)} />
-            </Box>
+          {tab === 'play' && <PlayTab />}
+          {tab === 'autoplay' && (
+            <AutoplayPanel session={state.session} disabled={state.busy} onStart={(games) => void actions.startAutoplay(games)} />
           )}
-          <AutoplayPanel session={state.session} disabled={state.busy} onStart={(games) => void actions.startAutoplay(games)} />
+          {tab === 'leaderboard' && (
+            <LeaderboardPanel games={state.leaderboard} disabled={state.busy} onRefresh={() => void actions.loadLeaderboard()} />
+          )}
         </Stack>
       </Container>
       {state.notice && <NoticeBar notice={state.notice} onDismiss={actions.dismissNotice} />}
@@ -53,5 +81,32 @@ export function App() {
         <Typography variant="body2">Every dragon needs an errand. Choose wisely.</Typography>
       </Box>
     </Box>
+  )
+}
+
+/** Playing by hand: start panel, or status bar with the board and the shop, or the game-over card. */
+function PlayTab() {
+  const { state, actions } = useGame()
+  if (state.restoring) {
+    return (
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', py: 6 }}>
+        <CircularProgress size={28} />
+        <Typography>Loading your game…</Typography>
+      </Stack>
+    )
+  }
+  if (!state.game) return <StartPanel />
+  const game = state.game
+  return (
+    <>
+      <StatusBar game={game} onLeave={actions.resetGame} />
+      {game.over && <GameOverBanner game={game} onStartAgain={actions.resetGame} />}
+      {!game.over && (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, alignItems: 'start' }}>
+          <AdBoard ads={state.ads} disabled={state.busy} onSolve={(adId) => void actions.solveAd(adId)} onRefresh={() => void actions.refreshAds()} />
+          <ShopPanel items={state.shop} gold={game.gold} disabled={state.busy} onBuy={(itemId) => void actions.buyItem(itemId)} />
+        </Box>
+      )}
+    </>
   )
 }

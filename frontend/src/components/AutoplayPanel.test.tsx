@@ -10,9 +10,9 @@ const runningSession: AutoplaySession = {
   requested: 3,
   finished: 1,
   games: [
-    { gameId: 'jz21oOWI', status: 'FINISHED', score: 5239, turn: 201, lives: 0 },
-    { gameId: '8ZW2dZlT', status: 'RUNNING', score: 2870, turn: 120, lives: 2 },
-    { status: 'RUNNING', score: 0, turn: 0, lives: 0 },
+    { gameId: 'jz21oOWI', status: 'FINISHED', score: 5239, turn: 201, lives: 0, gold: 87, level: 3 },
+    { gameId: '8ZW2dZlT', status: 'RUNNING', score: 2870, turn: 120, lives: 2, gold: 40, level: 2 },
+    { status: 'RUNNING', score: 0, turn: 0, lives: 0, gold: 0, level: 0 },
   ],
   summary: { min: 5239, avg: 5239, max: 5239 },
 }

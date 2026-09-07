@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { App } from './App'
 import { ApiError } from './api/http'
 import { finishedGame, quiteLikelyAd, runningGame } from './test/fixtures'
@@ -10,6 +11,13 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Dragons of Mugloar' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start new game' })).toBeInTheDocument()
+  })
+
+  it('showsALoadingHintInsteadOfTheStartPanelWhileRestoring', () => {
+    renderWithGame(<App />, { restoring: true })
+
+    expect(screen.getByText('Loading your game…')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
   })
 
   it('showsStatusBarAndAdBoardWhenAGameIsRunning', () => {
@@ -46,9 +54,41 @@ describe('App', () => {
     expect(screen.getByText('You successfully solved the mission!')).toBeInTheDocument()
   })
 
-  it('showsTheAutoplayPanelWithAndWithoutAGame', () => {
+  it('showsTheAutoplayPanelOnItsTab', async () => {
     renderWithGame(<App />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Autoplay' }))
+
     expect(screen.getByRole('region', { name: 'Autoplay' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start new game' })).not.toBeInTheDocument()
+  })
+
+  it('loadsAndShowsTheLeaderboardOnItsTab', async () => {
+    const { actions } = renderWithGame(<App />, {
+      leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3 }],
+    })
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Top scores' }))
+
+    expect(actions.loadLeaderboard).toHaveBeenCalled()
+    expect(screen.getByText('jz21oOWI')).toBeInTheDocument()
+  })
+
+  it('opensTheTabNamedInTheUrlHash', () => {
+    window.location.hash = '#autoplay'
+
+    renderWithGame(<App />)
+
+    expect(screen.getByRole('region', { name: 'Autoplay' })).toBeInTheDocument()
+    window.location.hash = ''
+  })
+
+  it('leaveGameReturnsToTheStartPanel', async () => {
+    const { actions } = renderWithGame(<App />, { game: runningGame })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Leave game' }))
+
+    expect(actions.resetGame).toHaveBeenCalledOnce()
   })
 
   it('showsTheErrorBannerWithTheTraceId', () => {
