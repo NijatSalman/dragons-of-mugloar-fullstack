@@ -38,7 +38,7 @@ class GameApiRestClientRateLimitTest {
     private MockRestServiceServer server;
 
     @Test
-    void callsBeyondThePermitsPerSecondWaitForTheNextPeriod() {
+    void getAdsWaitsForTheNextPeriodWhenThePermitsAreUsedUp() {
         server.expect(times(10), requestTo("https://game.test/api/v2/ggLmesXI/messages"))
                 .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
         Instant start = Instant.now();
