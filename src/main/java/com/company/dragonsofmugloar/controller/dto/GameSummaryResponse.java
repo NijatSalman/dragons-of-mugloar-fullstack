@@ -12,11 +12,10 @@ public record GameSummaryResponse(
         @Schema(example = "201") int turn,
         @Schema(example = "0") int lives,
         @Schema(example = "87") int gold,
-        @Schema(example = "3") int level,
-        @Schema(description = "True once no lives remain") boolean over) {
+        @Schema(example = "3") int level) {
 
     public static GameSummaryResponse from(Game game) {
         return new GameSummaryResponse(game.gameId(), game.origin(), game.score(), game.turn(), game.lives(), game.gold(),
-                game.level(), game.isOver());
+                game.level());
     }
 }

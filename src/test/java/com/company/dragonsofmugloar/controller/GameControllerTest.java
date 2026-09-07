@@ -54,10 +54,10 @@ class GameControllerTest {
     }
 
     @Test
-    void listGamesReturnsTheLeaderboardHighestScoreFirst() throws Exception {
-        when(gameService.listGamesByScore()).thenReturn(List.of(
+    void listTopGamesReturnsTheLeaderboardHighestScoreFirst() throws Exception {
+        when(gameService.listTopFinishedGames(10)).thenReturn(List.of(
                 new Game("jz21oOWI", 0, 12, 4, 5239, 5239, 201, GameOrigin.AUTOPLAY),
-                new Game(GAME_ID, 2, 120, 1, 300, 300, 15, GameOrigin.MANUAL)));
+                new Game(GAME_ID, 0, 120, 1, 300, 300, 15, GameOrigin.MANUAL)));
 
         mvc.perform(get(GAMES_URL))
                 .andExpect(status().isOk())
@@ -67,8 +67,13 @@ class GameControllerTest {
                 .andExpect(jsonPath("$[0].score").value(5239))
                 .andExpect(jsonPath("$[0].gold").value(12))
                 .andExpect(jsonPath("$[0].level").value(4))
-                .andExpect(jsonPath("$[0].over").value(true))
                 .andExpect(jsonPath("$[1].origin").value("MANUAL"));
+    }
+
+    @Test
+    void listTopGamesReturns400WhenLimitIsOutOfRange() throws Exception {
+        mvc.perform(get(GAMES_URL).param("limit", "101")).andExpect(status().isBadRequest());
+        verifyNoInteractions(gameService);
     }
 
     @Test

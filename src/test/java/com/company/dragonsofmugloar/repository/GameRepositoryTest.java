@@ -28,12 +28,13 @@ class GameRepositoryTest {
     }
 
     @Test
-    void findAllByScoreDescRanksEveryGame() {
+    void findTopFinishedRanksFinishedGamesAndSkipsRunningOnes() {
         repository.save(new Game("ggLmesXI", 0, 87, 3, 1462, 1462, 41, GameOrigin.MANUAL));
         repository.save(new Game("jz21oOWI", 0, 12, 4, 5239, 5239, 201, GameOrigin.AUTOPLAY));
-        repository.save(new Game("0NVG7E0r", 2, 40, 1, 380, 380, 12, GameOrigin.MANUAL));
+        repository.save(new Game("0NVG7E0r", 2, 40, 1, 9999, 9999, 12, GameOrigin.MANUAL)); // still running
 
-        assertThat(repository.findAllByScoreDesc()).extracting(Game::gameId).containsExactly("jz21oOWI", "ggLmesXI", "0NVG7E0r");
+        assertThat(repository.findTopFinished(10)).extracting(Game::gameId).containsExactly("jz21oOWI", "ggLmesXI");
+        assertThat(repository.findTopFinished(1)).extracting(Game::gameId).containsExactly("jz21oOWI");
     }
 
     @Test

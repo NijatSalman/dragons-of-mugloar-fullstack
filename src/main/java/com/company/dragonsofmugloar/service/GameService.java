@@ -27,9 +27,9 @@ public class GameService {
         return game;
     }
 
-    /** Every game this instance has seen, manual and autoplay alike, highest score first. */
-    public List<Game> listGamesByScore() {
-        return gameRepository.findAllByScoreDesc();
+    /** The leaderboard: finished games, manual and autoplay alike, highest score first. */
+    public List<Game> listTopFinishedGames(int limit) {
+        return gameRepository.findTopFinished(limit);
     }
 
     public Game getGame(String gameId) {

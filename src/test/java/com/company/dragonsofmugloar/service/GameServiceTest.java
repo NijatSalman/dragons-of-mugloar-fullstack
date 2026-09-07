@@ -54,11 +54,11 @@ class GameServiceTest {
     }
 
     @Test
-    void listGamesByScoreReturnsTheRankedGames() {
+    void listTopFinishedGamesReturnsOnlyFinishedGamesRanked() {
         gameRepository.save(NEW_GAME);
         gameRepository.save(new Game("jz21oOWI", 0, 12, 4, 5239, 5239, 201, GameOrigin.AUTOPLAY));
 
-        assertThat(service.listGamesByScore()).extracting(Game::gameId).containsExactly("jz21oOWI", GAME_ID);
+        assertThat(service.listTopFinishedGames(10)).extracting(Game::gameId).containsExactly("jz21oOWI");
     }
 
     @Test

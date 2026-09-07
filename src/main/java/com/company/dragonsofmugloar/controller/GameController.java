@@ -9,8 +9,11 @@ import com.company.dragonsofmugloar.domain.game.GameOrigin;
 import com.company.dragonsofmugloar.service.AdService;
 import com.company.dragonsofmugloar.service.GameService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,9 +47,11 @@ public class GameController {
     }
 
     @GetMapping
-    @Operation(summary = "Every game this instance has seen, manual and autoplay, highest score first")
-    public List<GameSummaryResponse> listGames() {
-        return gameService.listGamesByScore().stream().map(GameSummaryResponse::from).toList();
+    @Operation(summary = "Leaderboard: the finished games with the highest scores, manual and autoplay alike")
+    public List<GameSummaryResponse> listTopGames(
+            @Parameter(description = "How many games to return, 1 to 100", example = "10")
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit) {
+        return gameService.listTopFinishedGames(limit).stream().map(GameSummaryResponse::from).toList();
     }
 
     @GetMapping("/{gameId}")

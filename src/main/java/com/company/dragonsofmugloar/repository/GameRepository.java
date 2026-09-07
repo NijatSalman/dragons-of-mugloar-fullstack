@@ -22,8 +22,12 @@ public class GameRepository {
         return Optional.ofNullable(games.get(gameId));
     }
 
-    /** Every game this instance has seen, highest score first. */
-    public List<Game> findAllByScoreDesc() {
-        return games.values().stream().sorted(Comparator.comparingInt(Game::score).reversed()).toList();
+    /** The finished games with the highest scores, best first, at most {@code limit} of them. */
+    public List<Game> findTopFinished(int limit) {
+        return games.values().stream()
+                .filter(Game::isOver)
+                .sorted(Comparator.comparingInt(Game::score).reversed())
+                .limit(limit)
+                .toList();
     }
 }
