@@ -1,0 +1,9 @@
+# Prometheus scrapes the application's metrics endpoint every 15 seconds.
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: dragons-of-mugloar
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['app:8080']
