@@ -34,7 +34,7 @@ export function AdCard({ ad, disabled, onSolve }: AdCardProps) {
           {ad.recommended && <Chip size="small" color="success" icon={<RecommendIcon />} label="recommended" />}
         </Stack>
       </CardContent>
-      <CardActions sx={{ px: 2, pb: 2, justifyContent: 'flex-end' }}>
+      <CardActions sx={{ px: 2, pb: 2 }}>
         <Button variant="contained" onClick={() => onSolve(ad.adId)} disabled={disabled}>
           Solve
         </Button>
