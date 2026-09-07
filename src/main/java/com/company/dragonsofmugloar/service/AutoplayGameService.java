@@ -1,6 +1,8 @@
 package com.company.dragonsofmugloar.service;
 
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSession;
+import com.company.dragonsofmugloar.domain.autoplay.ScoreSummary;
+import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameSessionStatus;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameProgress;
 import com.company.dragonsofmugloar.domain.autoplay.AutoplayGameStatus;
 import com.company.dragonsofmugloar.domain.game.Game;
@@ -70,11 +72,22 @@ public class AutoplayGameService {
     }
 
     private void saveGameProgress(String sessionId, int gameIndex, AutoplayGameProgress outcome) {
-        sessionRepository.update(sessionId, session -> session.withGame(gameIndex, outcome));
+        sessionRepository.update(sessionId, session -> session.withGame(gameIndex, outcome)).ifPresent(this::logWhenFinished);
     }
 
     private void saveFailedGame(String sessionId, int gameIndex, RuntimeException failure) {
         log.error("Autoplay game failed: sessionId={}, gameIndex={}, reason={}", sessionId, gameIndex, failure.getMessage(), failure);
-        sessionRepository.update(sessionId, session -> session.withFailedGame(gameIndex, failure.getMessage()));
+        sessionRepository.update(sessionId, session -> session.withFailedGame(gameIndex, failure.getMessage())).ifPresent(this::logWhenFinished);
+    }
+
+    /** Logged once per session: the update is atomic, so only the game that ends last sees the session turn finished. */
+    private void logWhenFinished(AutoplayGameSession session) {
+        if (session.status() != AutoplayGameSessionStatus.FINISHED) {
+            return;
+        }
+        long failedGames = session.games().stream().filter(game -> game.status() == AutoplayGameStatus.FAILED).count();
+        ScoreSummary scores = session.scoreSummary().orElse(new ScoreSummary(0, 0, 0));
+        log.info("Autoplay session finished: sessionId={}, games={}, failed={}, minScore={}, avgScore={}, maxScore={}",
+                session.sessionId(), session.games().size(), failedGames, scores.min(), scores.avg(), scores.max());
     }
 }

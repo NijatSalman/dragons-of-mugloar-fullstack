@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.cache.annotation.Cacheable;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -43,6 +44,7 @@ import org.springframework.web.client.RestClientResponseException;
  * server refused the request for quota reasons, because a refused request was never applied. See
  * {@code resilience4j.*} in application.yaml.
  */
+@Slf4j
 @Component
 @RateLimiter(name = "gameApi")
 class GameApiRestClient implements GameApiClient {
@@ -151,14 +153,25 @@ class GameApiRestClient implements GameApiClient {
             }
             return body;
         } catch (RestClientResponseException httpError) {
-            throw exceptionFor(httpError.getStatusCode().value(), gameId);
+            int status = httpError.getStatusCode().value();
+            if (!isGameState(status)) {
+                log.warn("Game server refused request: gameId={}, status={}", gameId, status);
+            }
+            throw exceptionFor(status, gameId);
         } catch (ResourceAccessException networkError) {
+            log.warn("Game server unreachable: gameId={}, cause={}", gameId, networkError.getMessage());
             throw new GameApiException("Game server unreachable: gameId=" + gameId + ", cause=" + networkError.getMessage(),
                     networkError);
         } catch (RestClientException clientError) {
+            log.warn("Game server response unreadable: gameId={}, cause={}", gameId, clientError.getMessage());
             throw new GameApiException("Game server response unreadable: gameId=" + gameId + ", cause=" + clientError.getMessage(),
                     clientError);
         }
+    }
+
+    /** 404 and 410 describe the game, not a server problem, and are logged where they are handled. */
+    private static boolean isGameState(int status) {
+        return status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.GONE.value();
     }
 
     private static RuntimeException exceptionFor(int status, String gameId) {
