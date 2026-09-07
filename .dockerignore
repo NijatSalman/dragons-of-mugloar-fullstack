@@ -1,0 +1,9 @@
+.git
+.gradle
+build
+.idea
+.claude
+frontend/node_modules
+frontend/dist
+frontend/coverage
+*.md
