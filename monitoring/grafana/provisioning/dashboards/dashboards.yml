@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: dragons
+    folder: ''
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
