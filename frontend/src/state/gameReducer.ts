@@ -85,7 +85,7 @@ export function gameReducer(state: State, action: Action): State {
     case 'GAME_RESET':
       return { ...initialState, session: state.session, leaderboard: state.leaderboard }
     case 'GAME_EXPIRED':
-      return { ...initialState, session: state.session, leaderboard: state.leaderboard, notice: { message: 'Your previous game has expired on the game server.', tone: 'info' } }
+      return { ...initialState, session: state.session, leaderboard: state.leaderboard, notice: { message: 'Your previous game has expired.', tone: 'info' } }
   }
 }
 

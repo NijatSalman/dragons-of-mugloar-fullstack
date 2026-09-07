@@ -7,7 +7,12 @@ export function ErrorBanner({ error, onDismiss }: { error: ApiError; onDismiss: 
     <Alert severity="error" onClose={onDismiss}>
       <AlertTitle>{error.title}</AlertTitle>
       {error.detail}
-      {error.traceId && <> (trace {error.traceId})</>}
+      {error.traceId && (
+        <>
+          {' '}
+          Reference for support: {error.traceId}
+        </>
+      )}
     </Alert>
   )
 }

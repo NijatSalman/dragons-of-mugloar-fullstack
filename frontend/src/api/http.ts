@@ -26,7 +26,7 @@ export async function request<T>(method: 'GET' | 'POST', url: string): Promise<T
   try {
     response = await fetch(url, { method, headers: { Accept: 'application/json' } })
   } catch {
-    throw new ApiError(0, 'Network error', 'The server could not be reached')
+    throw new ApiError(0, 'Connection problem', 'Could not reach the game. Check your connection and try again.')
   }
   if (!response.ok) {
     throw await toApiError(response)

@@ -21,7 +21,7 @@ export function LeaderboardPanel({ games, disabled, onRefresh }: LeaderboardPane
         </IconButton>
       </Stack>
       <Typography variant="body2" sx={{ mb: 1, color: 'rgba(43,33,24,0.7)' }}>
-        Finished games only, since this backend started.
+        Finished games only.
       </Typography>
       {games.length === 0 ? (
         <Typography>No finished games yet. Play one to the end, or let the dragon play.</Typography>

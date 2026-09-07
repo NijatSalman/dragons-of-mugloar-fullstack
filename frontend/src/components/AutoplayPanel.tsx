@@ -54,7 +54,7 @@ export function AutoplayPanel({ session, disabled, onStart }: AutoplayPanelProps
         </Button>
       </Stack>
       <Typography variant="body2" sx={{ mt: 1, color: 'rgba(43,33,24,0.7)' }}>
-        Games run in parallel on the server; each one plays until its dragon runs out of lives.
+        Several dragons play at the same time; each game lasts until its dragon runs out of lives.
       </Typography>
       {session && <SessionProgress session={session} />}
     </Paper>
@@ -69,7 +69,7 @@ function SessionProgress({ session }: { session: AutoplaySession }) {
           size="small"
           color={session.status === 'FINISHED' ? 'success' : 'primary'}
           icon={session.status === 'RUNNING' ? <CircularProgress size={12} color="inherit" /> : undefined}
-          label={session.status === 'RUNNING' ? 'running, updating every 3 s' : 'finished'}
+          label={session.status === 'RUNNING' ? 'running' : 'finished'}
         />
         <Typography variant="body2">
           {session.finished} of {session.requested} games finished
