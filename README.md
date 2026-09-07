@@ -333,7 +333,6 @@ this exercise.
 | Storage | Postgres behind the existing repositories, so games and top scores survive a restart | The task is a game session, not a system of record; a database adds setup for reviewers without changing any behaviour |
 | Autoplay control | `DELETE /autoplay/sessions/{id}` with a cooperative stop flag checked each turn, a Stop button in the UI | Sessions are short and bounded to 20 games; cancelling adds a state and a race for a rarely used action |
 | Players | Names on the top-scores list and per-player history | No identity concept in the game; would invent a requirement |
-| Strategy | Value an ad by expected gain (`chance × reward − (1 − chance) × potion price`); pass turns until a hostile board renews; spend surplus gold on long shots late in the game; tune label chances from measured outcomes | The simple rule already scores four to six times the requirement; each refinement needs its own measurement run to prove it helps |
 | Live updates | Server-sent events for the autoplay view instead of polling every 3 s | Polling is simple, testable and cheap at this request volume |
 | Caching | TTL on the shop catalogue cache (Caffeine) | The catalogue has never changed; a restart refreshes it |
 | Resilience | Circuit breaker towards the game server | Rate limiter plus bounded retries already contain the only failure mode observed (quota) |
