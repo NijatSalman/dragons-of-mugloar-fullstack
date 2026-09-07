@@ -49,7 +49,7 @@ export function App() {
           >
             <Tab value="play" label="Play" />
             <Tab value="autoplay" label="Autoplay" />
-            <Tab value="leaderboard" label="Leaderboard" />
+            <Tab value="leaderboard" label="Top scores" />
           </Tabs>
         </Toolbar>
       </AppBar>
