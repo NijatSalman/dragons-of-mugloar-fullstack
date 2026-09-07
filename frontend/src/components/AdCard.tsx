@@ -14,8 +14,12 @@ interface AdCardProps {
 /** One ad from the board: what it asks, what it pays, how likely it is, and the button to attempt it. */
 export function AdCard({ ad, disabled, onSolve }: AdCardProps) {
   return (
-    <Card component="article" aria-label={ad.message} sx={{ outline: ad.recommended ? '2px solid #7ea15a' : 'none' }}>
-      <CardContent>
+    <Card
+      component="article"
+      aria-label={ad.message}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', outline: ad.recommended ? '2px solid #7ea15a' : 'none' }}
+    >
+      <CardContent sx={{ flex: 1 }}>
         <Typography sx={{ fontWeight: 600, mb: 1.5 }}>{ad.message}</Typography>
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
           <Chip size="small" color={chanceTone(ad.successChance)} label={`${ad.probability} · ${percent(ad.successChance)}`} />
@@ -30,7 +34,7 @@ export function AdCard({ ad, disabled, onSolve }: AdCardProps) {
           {ad.recommended && <Chip size="small" color="success" icon={<RecommendIcon />} label="recommended" />}
         </Stack>
       </CardContent>
-      <CardActions sx={{ px: 2, pb: 2 }}>
+      <CardActions sx={{ px: 2, pb: 2, justifyContent: 'flex-end' }}>
         <Button variant="contained" onClick={() => onSolve(ad.adId)} disabled={disabled}>
           Solve
         </Button>
