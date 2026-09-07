@@ -14,13 +14,24 @@ import { useAutoplayPolling } from './hooks/useAutoplayPolling'
 import { useGame } from './state/useGame'
 
 type Tab = 'play' | 'autoplay' | 'leaderboard'
+const TABS: Tab[] = ['play', 'autoplay', 'leaderboard']
+
+/** The selected tab lives in the URL hash, so a reload and the back button keep it. */
+function tabFromHash(): Tab {
+  const hash = window.location.hash.replace('#', '')
+  return (TABS as string[]).includes(hash) ? (hash as Tab) : 'play'
+}
 
 /** Page shell: title bar, three tabs (play by hand, let the dragon play, leaderboard) and a footer. */
 export function App() {
   const { state, actions } = useGame()
-  const [tab, setTab] = useState<Tab>('play')
+  const [tab, setTab] = useState<Tab>(tabFromHash)
   const playing = state.game !== undefined && !state.game.over
   useAutoplayPolling(state.session, actions.refreshAutoplay)
+
+  useEffect(() => {
+    window.location.hash = tab === 'play' ? '' : tab
+  }, [tab])
 
   // The leaderboard is fetched whenever its tab is opened.
   useEffect(() => {

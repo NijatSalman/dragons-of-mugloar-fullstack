@@ -5,7 +5,8 @@ import { rememberedGameId, rememberedSessionId, useGameActions } from './useGame
 
 /** Holds the one state object of the app and gives every component access to it through useGame(). */
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, initialState)
+  // Start in "restoring" when a game is remembered, so the start panel never flashes before it loads.
+  const [state, dispatch] = useReducer(gameReducer, initialState, (base) => ({ ...base, restoring: rememberedGameId() !== undefined }))
   const actions = useGameActions(dispatch, state.game?.gameId)
   const resumed = useRef(false)
 

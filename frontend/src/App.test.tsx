@@ -74,6 +74,15 @@ describe('App', () => {
     expect(screen.getByText('jz21oOWI')).toBeInTheDocument()
   })
 
+  it('opensTheTabNamedInTheUrlHash', () => {
+    window.location.hash = '#autoplay'
+
+    renderWithGame(<App />)
+
+    expect(screen.getByRole('region', { name: 'Autoplay' })).toBeInTheDocument()
+    window.location.hash = ''
+  })
+
   it('leaveGameReturnsToTheStartPanel', async () => {
     const { actions } = renderWithGame(<App />, { game: runningGame })
 
