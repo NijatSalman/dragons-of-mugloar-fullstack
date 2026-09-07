@@ -14,7 +14,7 @@ vi.mock('../api/gameApi', () => ({
     buyItem: vi.fn(),
     startAutoplay: vi.fn(),
     getAutoplayProgress: vi.fn(),
-    getGames: vi.fn(),
+    getTopGames: vi.fn(),
   },
 }))
 

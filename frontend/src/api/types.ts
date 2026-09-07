@@ -23,7 +23,6 @@ export interface GameSummary {
   lives: number
   gold: number
   level: number
-  over: boolean
 }
 
 export interface Ad {

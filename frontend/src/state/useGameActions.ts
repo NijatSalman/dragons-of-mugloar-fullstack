@@ -105,7 +105,7 @@ export function useGameActions(dispatch: Dispatch<Action>, gameId?: string) {
 
       loadLeaderboard: () =>
         run(async () => {
-          dispatch({ type: 'LEADERBOARD_LOADED', games: await gameApi.getGames() })
+          dispatch({ type: 'LEADERBOARD_LOADED', games: await gameApi.getTopGames() })
         }),
 
       resetGame: () => {

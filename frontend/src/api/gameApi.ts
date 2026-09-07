@@ -9,7 +9,7 @@ export const gameApi = {
 
   getGame: (gameId: string) => request<Game>('GET', `${BASE}/games/${gameId}`),
 
-  getGames: () => request<GameSummary[]>('GET', `${BASE}/games`),
+  getTopGames: () => request<GameSummary[]>('GET', `${BASE}/games?limit=10`),
 
   getRecommendedAds: (gameId: string) => request<Ad[]>('GET', `${BASE}/games/${gameId}/ads`),
 

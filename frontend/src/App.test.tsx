@@ -58,7 +58,7 @@ describe('App', () => {
 
   it('loadsAndShowsTheLeaderboardOnItsTab', async () => {
     const { actions } = renderWithGame(<App />, {
-      leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3, over: true }],
+      leaderboard: [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY', score: 5239, turn: 201, lives: 0, gold: 87, level: 3 }],
     })
 
     await userEvent.click(screen.getByRole('tab', { name: 'Leaderboard' }))

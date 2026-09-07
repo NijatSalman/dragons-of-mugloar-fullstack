@@ -24,7 +24,13 @@ export function StatusBar({ game, onLeave }: StatusBarProps) {
         <Typography variant="body2" sx={{ ml: 'auto', color: 'rgba(43,33,24,0.7)' }}>
           Game {game.gameId}
         </Typography>
-        <Button size="small" variant="outlined" color="inherit" startIcon={<LogoutIcon />} onClick={onLeave}>
+        <Button
+          size="small"
+          variant="text"
+          startIcon={<LogoutIcon />}
+          onClick={onLeave}
+          sx={{ color: 'rgba(43,33,24,0.75)', textTransform: 'none', fontFamily: '"Crimson Pro", Georgia, serif', fontWeight: 600 }}
+        >
           Leave game
         </Button>
       </Stack>

@@ -122,7 +122,7 @@ describe('gameReducer', () => {
   })
 
   it('leaderboardLoadedStoresTheRankedGames', () => {
-    const games = [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY' as const, score: 5239, turn: 201, lives: 0, gold: 87, level: 3, over: true }]
+    const games = [{ gameId: 'jz21oOWI', origin: 'AUTOPLAY' as const, score: 5239, turn: 201, lives: 0, gold: 87, level: 3 }]
 
     const state = gameReducer({ ...initialState, busy: true }, { type: 'LEADERBOARD_LOADED', games })
 

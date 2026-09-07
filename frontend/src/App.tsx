@@ -40,7 +40,13 @@ export function App() {
           <Typography variant="h1" component="h1" sx={{ color: 'primary.main', flex: 1 }}>
             Dragons of Mugloar
           </Typography>
-          <Tabs value={tab} onChange={(_event, next: Tab) => setTab(next)} textColor="inherit" indicatorColor="primary">
+          <Tabs
+            value={tab}
+            onChange={(_event, next: Tab) => setTab(next)}
+            textColor="inherit"
+            indicatorColor="primary"
+            sx={{ '& .MuiTab-root': { color: 'rgba(241,228,200,0.75)', fontFamily: '"Cinzel", Georgia, serif', fontWeight: 700 }, '& .Mui-selected': { color: 'primary.main' } }}
+          >
             <Tab value="play" label="Play" />
             <Tab value="autoplay" label="Autoplay" />
             <Tab value="leaderboard" label="Leaderboard" />
